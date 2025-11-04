@@ -1,0 +1,62 @@
+# --- Node / Frontend ---
+node_modules/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+coverage/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+.next/
+.nuxt/
+.out/
+.svelte-kit/
+.vite/
+storybook-static/
+
+# Lock-файлы обычно храним (package-lock.json / yarn.lock / pnpm-lock.yaml)
+# Если захочешь — не игнорируй их.
+
+# --- Python / Backend ---
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+.mypy_cache/
+.pytest_cache/
+.coverage*
+htmlcov/
+# виртуалки
+.venv/
+venv/
+env/
+ENV/
+
+# Базы и логи (если используешь SQLite локально)
+db.sqlite3
+*.log
+
+# Django/статик, если есть
+staticfiles/
+media/
+
+# --- Env / Secrets ---
+*.env
+*.env.*
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+
+# --- IDE / OS ---
+.vscode/
+.idea/
+*.iml
+.DS_Store
+Thumbs.db

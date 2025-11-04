@@ -25,19 +25,17 @@ Designed for anyone involved in posting: posters, artists, and managers.
 
 - **Frontend:** Vue 3 + Vite
 - **Backend:** Python + Django
-- **Database:** TBD (to be confirmed)
+- **Database:** SQLite (db.sqlite3) 
 - **Docker:** Not used yet (may be added later)
 
-> DB choice and Docker setup will be specified later in this README.
 
 ---
 
 ## 🚀 Getting Started (local)
 
-> Temporary placeholder — exact commands will be added when the launch flow is fixed.
+The frontend lives inside the `posthub-ui` directory.
 
-### Frontend (Vue 3 + Vite)
 ```bash
-cd frontend
-npm install
-npm run dev
+cd frontend/posthub-ui     # or cd "PostList Front/posthub-ui"
+npm install                # install dependencies
+npm run dev                # start Vite dev server

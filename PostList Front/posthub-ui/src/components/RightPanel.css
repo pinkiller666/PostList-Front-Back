@@ -1,0 +1,77 @@
+/* Правая панель */
+.right-panel {
+    width: 34%;
+    height: 100vh;
+    background: var(--el-bg-color-page);
+    border-left: 1px solid var(--el-border-color);
+    overflow-y: auto;
+    padding: 12px;
+    /* outline: 3px solid hotpink !important;  ← тестовую рамку можно убрать */
+}
+
+/* Ровная сетка строки */
+.art-row {
+    display: grid;
+    grid-template-columns: 2.2fr 0.5fr 0.8fr 0.9fr 0.9fr 0.9fr;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    background: var(--el-bg-color);
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.art-row + .art-row { margin-top: 6px; }
+.art-row:hover { background: var(--el-fill-color-light); }
+
+/* Название — центр, до 3 строк */
+.art-name {
+    font-weight: 700;
+    font-size: 16px;
+    text-align: center;
+    line-height: 1.28;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Вертикальные столбики */
+.vstack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    justify-content: center;
+}
+
+/* Иконки-эмодзи */
+.ico {
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.35;
+    transform: translateZ(0);
+    transition: opacity 0.12s ease, filter 0.12s ease;
+}
+.ico.active { opacity: 0.95; }
+.ico.status { font-size: 20px; opacity: 0.6; }
+.ico.status.done { opacity: 1; }
+
+/* Чекбоксы Element Plus — БЕЗ :deep, так как CSS внешний (глобальный) */
+.art-posted .el-checkbox {
+    --el-checkbox-font-size: 12px;
+}
+.art-posted .el-checkbox__inner {
+    width: 16px;
+    height: 16px;
+}
+
+/* Микро-адаптив */
+@media (max-width: 1200px) {
+    .art-row {
+        grid-template-columns: 2.2fr 0.5fr 0.7fr 0.8fr 0.8fr 0.8fr;
+        gap: 8px;
+    }
+    .ico { font-size: 17px; }
+}

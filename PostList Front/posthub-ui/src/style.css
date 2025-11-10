@@ -1,0 +1,67 @@
+/* === Base reset for our app layout === */
+:root {
+  /* оставим светлую схему по умолчанию */
+  color-scheme: light;
+  --app-font: system-ui, Avenir, Helvetica, Arial, sans-serif;
+
+  /* базовые цвета — дальше переопределяются темой Element Plus */
+  color: #3ad810;
+  background-color: #ffffff;
+
+  font-family: var(--app-font);
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body, #app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  display: block;         /* было flex + place-items:center — убираем */
+  background: var(--el-bg-color, #fff);
+  color: var(--el-text-color-primary, #213547);
+}
+
+/* Ссылки/кнопки — нейтральные */
+a {
+  color: #2652c1;
+  text-decoration: none;
+}
+a:hover { color: #fa2061; }
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.25s;
+  background: #f9f9f9;
+}
+button:hover { border-color: #646cff; }
+button:focus,
+button:focus-visible { outline: 4px auto -webkit-focus-ring-color; }
+
+/* Убираем центрирование и max-width у корневого контейнера */
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;             /* было 2rem — убираем */
+  text-align: initial;    /* было center — убираем */
+}
+
+/* Опционально: крупные заголовки */
+h1 { font-size: 3.2em; line-height: 1.1; }
+
+/* Карточки из шаблона — если нужно оставить */
+.card { padding: 2em; }

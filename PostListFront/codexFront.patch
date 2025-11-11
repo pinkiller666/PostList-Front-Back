@@ -1,0 +1,477 @@
+diff --git a/PostList Front/posthub-ui/src/App.vue b/PostList Front/posthub-ui/src/App.vue
+index fb3b0500650f30aa9d7d454bcaad8112066971ce..d93d8bfda4960d06c4dd1004fc28d88c69265c48 100644
+--- a/PostList Front/posthub-ui/src/App.vue 
++++ b/PostList Front/posthub-ui/src/App.vue 
+@@ -1,40 +1,192 @@
+ <script setup>
+-import { ref } from 'vue'
++import { computed, ref } from 'vue'
++import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'
+ import http from './api/http'
+ import { ElMessage } from 'element-plus'
+ import ArtsTable from './components/ArtsTable.vue'
+ import RightPanel from './components/RightPanel.vue'
+ 
+ const loading = ref(false)
++const loaderOpen = ref(false)
++const loaderLabel = computed(() =>
++  loaderOpen.value ? 'Скрыть панель загрузчика' : 'Показать панель загрузчика'
++)
+ const items = ref([])
+ 
++const toggleLoader = () => {
++  loaderOpen.value = !loaderOpen.value
++}
++
+ const loadData = async () => {
+   loading.value = true
+   try {
+     const { data } = await http.get('/api/arts/')   // тот же эндпоинт
+     // предполагаю структуру { items: [...] }
+     items.value = Array.isArray(data?.items) ? data.items : []
+     ElMessage.success('Загружено')
+   } catch (e) {
+     ElMessage.error('Ошибка загрузки')
+   } finally {
+     loading.value = false
+   }
+ }
+ </script>
+ 
+ <template>
+-  <div style="padding:24px; max-width:960px; margin:0 auto">
+-    <h1 style="font-size:42px; font-weight:800; margin-bottom:16px">PostHub UI</h1>
++  <div class="app-page">
++    <header class="app-header">
++      <h1 class="app-title">posthub ui</h1>
++    </header>
++
++    <div class="app-main">
++      <aside class="app-main__sidebar">
++        <RightPanel />
++      </aside>
+ 
+-    <RightPanel />
++      <div class="app-main__content">
++        <div class="loader-tools">
++          <el-button
++            class="loader-toggle"
++            :class="{ 'is-open': loaderOpen }"
++            circle
++            size="small"
++            text
++            @click="toggleLoader"
++            :aria-expanded="loaderOpen"
++            :aria-label="loaderLabel"
++            :title="loaderLabel"
++          >
++            <el-icon>
++              <component :is="loaderOpen ? ArrowUp : ArrowDown" />
++            </el-icon>
++          </el-button>
++        </div>
+ 
+-    <el-button type="primary" :loading="loading" @click="loadData">
+-      Загрузить данные с Django
+-    </el-button>
++        <transition name="fade-expand">
++          <div v-if="loaderOpen" class="loader-panel">
++            <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
++              Загрузить данные с Django
++            </el-button>
++          </div>
++        </transition>
+ 
+-    <div style="margin-top:16px">
+-      <ArtsTable :items="items" />
++        <div class="table-wrapper">
++          <ArtsTable :items="items" />
++        </div>
++      </div>
+     </div>
+   </div>
+ </template>
++
++<style scoped>
++.app-page {
++  min-height: 100vh;
++  padding: 40px 32px 48px 48px;
++  display: flex;
++  flex-direction: column;
++  background: var(--el-bg-color-page);
++  box-sizing: border-box;
++}
++
++.app-header {
++  display: flex;
++  flex-wrap: wrap;
++  align-items: center;
++  justify-content: center;
++}
++
++.app-title {
++  font-size: 40px;
++  font-weight: 700;
++  letter-spacing: 0.6px;
++  text-transform: lowercase;
++  margin: 0;
++  text-align: center;
++}
++
++.loader-tools {
++  display: flex;
++  justify-content: flex-start;
++  margin-bottom: 4px;
++}
++
++.loader-toggle {
++  --el-button-text-color: var(--el-text-color-secondary);
++  --el-button-hover-text-color: var(--el-text-color-primary);
++  --el-button-hover-bg-color: var(--el-fill-color-lighter);
++  --el-button-active-bg-color: var(--el-fill-color);
++  border-radius: 50%;
++  box-shadow: 0 0 0 1px var(--el-border-color) inset;
++  width: 28px;
++  height: 28px;
++  padding: 0;
++}
++
++.loader-toggle .el-icon {
++  font-size: 14px;
++  transition: transform 0.18s ease;
++}
++
++.loader-toggle.is-open .el-icon {
++  transform: rotate(180deg);
++}
++
++.loader-panel {
++  display: flex;
++  justify-content: flex-start;
++  margin-top: 8px;
++}
++
++.app-main {
++  display: grid;
++  grid-template-columns: minmax(320px, 400px) minmax(0, 1fr);
++  align-items: start;
++  gap: 28px;
++  margin-top: 32px;
++}
++
++.app-main__content {
++  display: flex;
++  flex-direction: column;
++  gap: 24px;
++  min-width: 0;
++}
++
++.app-main__sidebar {
++  align-self: stretch;
++}
++
++.table-wrapper {
++  width: 100%;
++}
++
++.fade-expand-enter-active,
++.fade-expand-leave-active {
++  transition: opacity 0.18s ease, transform 0.18s ease;
++}
++
++.fade-expand-enter-from,
++.fade-expand-leave-to {
++  opacity: 0;
++  transform: translateY(-6px);
++}
++
++@media (max-width: 960px) {
++  .app-page {
++    padding: 24px 16px 32px;
++  }
++  .app-main {
++    grid-template-columns: 1fr;
++    gap: 24px;
++  }
++
++  .app-main__content {
++    width: 100%;
++    min-width: 0;
++  }
++
++  .app-main__sidebar {
++    width: 100%;
++  }
++}
++</style>
+diff --git a/PostList Front/posthub-ui/src/components/RightPanel.css b/PostList Front/posthub-ui/src/components/RightPanel.css
+index 94e864f724da53add8542684d619bae0ae632255..f5ff527b069dbe73ef837613776cffa7cafe585a 100644
+--- a/PostList Front/posthub-ui/src/components/RightPanel.css   
++++ b/PostList Front/posthub-ui/src/components/RightPanel.css   
+@@ -1,77 +1,144 @@
+ /* Правая панель */
+ .right-panel {
+-    width: 34%;
+-    height: 100vh;
++    width: 100%;
++    min-height: 100%;
++    max-height: calc(100vh - 120px);
+     background: var(--el-bg-color-page);
+-    border-left: 1px solid var(--el-border-color);
++    border-right: 1px solid var(--el-border-color);
+     overflow-y: auto;
+-    padding: 12px;
+-    /* outline: 3px solid hotpink !important;  ← тестовую рамку можно убрать */
++    padding: 20px 18px;
++    box-sizing: border-box;
+ }
+ 
+ /* Ровная сетка строки */
+ .art-row {
+     display: grid;
+-    grid-template-columns: 2.2fr 0.5fr 0.8fr 0.9fr 0.9fr 0.9fr;
++    grid-template-columns: 2fr 0.8fr 1.05fr 1.05fr 1.05fr 0.9fr;
+     align-items: center;
+-    gap: 10px;
+-    padding: 10px 12px;
++    justify-items: start;
++    gap: 12px;
++    padding: 12px 14px;
+     border-bottom: 1px solid var(--el-border-color-lighter);
+     background: var(--el-bg-color);
+     transition: background 0.15s ease, box-shadow 0.15s ease;
+ }
+ .art-row + .art-row { margin-top: 6px; }
+ .art-row:hover { background: var(--el-fill-color-light); }
+ 
+-/* Название — центр, до 3 строк */
++/* Название — слева, до 3 строк */
+ .art-name {
+     font-weight: 700;
+     font-size: 16px;
+-    text-align: center;
++    text-align: left;
+     line-height: 1.28;
+     word-break: break-word;
+     display: -webkit-box;
+     -webkit-line-clamp: 3;
+     -webkit-box-orient: vertical;
+     overflow: hidden;
++    padding: 0 4px;
++}
++
++.art-status {
++    display: flex;
++    justify-content: flex-start;
++    padding: 0 4px;
+ }
+ 
+ /* Вертикальные столбики */
+ .vstack {
+     display: flex;
+     flex-direction: column;
+-    align-items: center;
+-    gap: 6px;
+-    min-height: 40px;
++    align-items: flex-start;
++    gap: 8px;
++    min-height: 44px;
+     justify-content: center;
+ }
+ 
+-/* Иконки-эмодзи */
+-.ico {
+-    font-size: 18px;
+-    line-height: 1;
+-    opacity: 0.35;
+-    transform: translateZ(0);
+-    transition: opacity 0.12s ease, filter 0.12s ease;
++/* Текстовые бейджи */
++.label {
++    display: inline-flex;
++    align-items: center;
++    justify-content: flex-start;
++    text-align: left;
++    min-width: 56px;
++    padding: 5px 10px;
++    border-radius: 8px;
++    background: var(--el-fill-color-lighter);
++    color: var(--el-text-color-regular);
++    font-size: 13px;
++    font-weight: 500;
++    line-height: 1.1;
++    text-transform: lowercase;
++    letter-spacing: 0.2px;
++    opacity: 0.45;
++    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
++}
++.label.active {
++    opacity: 1;
++    background: var(--el-color-primary-light-9);
++    color: var(--el-color-primary);
++}
++
++.status-pill {
++    display: inline-flex;
++    align-items: center;
++    justify-content: flex-start;
++    padding: 7px 14px;
++    border-radius: 999px;
++    font-size: 13px;
++    font-weight: 600;
++    text-transform: lowercase;
++    background: var(--el-fill-color-lighter);
++    color: var(--el-text-color-primary);
++    letter-spacing: 0.3px;
++    min-width: 112px;
++    text-align: left;
++}
++.status-pill.done {
++    background: var(--el-color-success-light-9);
++    color: var(--el-color-success);
+ }
+-.ico.active { opacity: 0.95; }
+-.ico.status { font-size: 20px; opacity: 0.6; }
+-.ico.status.done { opacity: 1; }
+ 
+ /* Чекбоксы Element Plus — БЕЗ :deep, так как CSS внешний (глобальный) */
+ .art-posted .el-checkbox {
+     --el-checkbox-font-size: 12px;
++    margin: 0;
++    display: flex;
++    justify-content: flex-start;
++    align-items: center;
+ }
+ .art-posted .el-checkbox__inner {
+     width: 16px;
+     height: 16px;
+ }
++.art-posted .el-checkbox__input { margin-right: 0; }
++
++@media (max-width: 960px) {
++    .right-panel {
++        max-height: none;
++        border-right: none;
++        border-bottom: 1px solid var(--el-border-color);
++        padding: 16px 12px;
++        margin-left: 0;
++        margin-right: 0;
++    }
++}
+ 
+ /* Микро-адаптив */
+ @media (max-width: 1200px) {
+     .art-row {
+-        grid-template-columns: 2.2fr 0.5fr 0.7fr 0.8fr 0.8fr 0.8fr;
+-        gap: 8px;
++        grid-template-columns: 1.8fr 0.75fr 1fr 1fr 1fr 0.9fr;
++        gap: 10px;
++    }
++    .label {
++        min-width: 52px;
++        font-size: 12px;
++        padding: 4px 7px;
++    }
++    .status-pill {
++        min-width: 92px;
++        padding: 5px 11px;
++        font-size: 12px;
+     }
+-    .ico { font-size: 17px; }
+ }
+diff --git a/PostList Front/posthub-ui/src/components/RightPanel.vue b/PostList Front/posthub-ui/src/components/RightPanel.vue
+index e446c10b4e0cb5e41e8a00971a3c945b742883c1..21dfa0449a3698fc08be40634b9b0793935b3980 100644
+--- a/PostList Front/posthub-ui/src/components/RightPanel.vue   
++++ b/PostList Front/posthub-ui/src/components/RightPanel.vue   
+@@ -1,78 +1,78 @@
+ <script setup>
+ import { ref } from 'vue'
+ import './RightPanel.css'
+ 
+ // временные данные (пока без API)
++const statusLabel = (status) => (status ? status.replace(/_/g, ' ') : '')
++
+ const arts = ref([
+   {
+     id: 1,
+     name: 'Парочка из Финалки',
+     status: 'complete',
+     human: true,
+     furry: false,
+     sfw: true,
+     nsfw: false,
+     crop: false,
+     post_targets: { twi16: true, twi18: false, bsky: true },
+     posted: { twi16: true, twi18: false, bsky: false }
+   },
+   {
+     id: 2,
+     name: 'Тёмный рыцарь из Тарковы',
+     status: 'in_progress',
+     human: false,
+     furry: true,
+     sfw: false,
+     nsfw: true,
+     crop: true,
+     post_targets: { twi16: false, twi18: true, bsky: true },
+     posted: { twi16: false, twi18: false, bsky: false }
+   }
+ ])
+ </script>
+ 
+ <template>
+   <div class="right-panel">
+     <div v-for="art in arts" :key="art.id" class="art-row">
+       <!-- Название -->
+       <div class="art-name">{{ art.name }}</div>
+ 
+       <!-- Статус -->
+       <div class="art-status">
+-        <el-tooltip :content="art.status">
+-          <span class="ico status" :class="{ done: art.status === 'complete' }">
+-            {{ art.status === 'complete' ? '✅' : '⭕' }}
+-          </span>
+-        </el-tooltip>
++        <span class="status-pill" :class="{ done: art.status === 'complete' }">
++          {{ statusLabel(art.status) }}
++        </span>
+       </div>
+ 
+       <!-- Тип персонажа -->
+       <div class="art-type vstack">
+-        <span class="ico" :class="{ active: art.human }">👤</span>
+-        <span class="ico" :class="{ active: art.furry }">🐺</span>
++        <span class="label" :class="{ active: art.human }">human</span>
++        <span class="label" :class="{ active: art.furry }">furry</span>
+       </div>
+ 
+       <!-- Контент -->
+       <div class="art-content vstack">
+-        <span class="ico" :class="{ active: art.sfw }">⚪</span>
+-        <span class="ico" :class="{ active: art.nsfw }">🔞</span>
+-        <span class="ico" :class="{ active: art.crop }">✂️</span>
++        <span class="label" :class="{ active: art.sfw }">sfw</span>
++        <span class="label" :class="{ active: art.nsfw }">nsfw</span>
++        <span class="label" :class="{ active: art.crop }">crop</span>
+       </div>
+ 
+       <!-- Куда постить (план) -->
+       <div class="art-post vstack">
+-        <span class="ico" :class="{ active: art.post_targets.twi16 }">🕊️</span>
+-        <span class="ico" :class="{ active: art.post_targets.twi18 }">🦋</span>
+-        <span class="ico" :class="{ active: art.post_targets.bsky }">🌐</span>
++        <span class="label" :class="{ active: art.post_targets.twi16 }">twi16</span>
++        <span class="label" :class="{ active: art.post_targets.twi18 }">twi18</span>
++        <span class="label" :class="{ active: art.post_targets.bsky }">bsky</span>
+       </div>
+ 
+       <!-- Уже запощено (факт) -->
+       <div class="art-posted vstack">
+         <el-checkbox v-model="art.posted.twi16" size="small" />
+         <el-checkbox v-model="art.posted.twi18" size="small" />
+         <el-checkbox v-model="art.posted.bsky" size="small" />
+       </div>
+     </div>
+   </div>
+ </template>
+ 

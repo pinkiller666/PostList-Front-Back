@@ -3,3 +3,7 @@ codex.patch
 PostList Front/codexFront.patch
 PostList Front/.idea/workspace.xml
 PostList Front/.idea/workspace.xml
+PostListBack/db.sqlite3
+PostListFront/.idea/workspace.xml
+PostListBack/.idea/PostList.iml
+PostListBack/.idea/misc.xml

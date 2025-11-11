@@ -1,10 +1,11 @@
 diff --git a/PostList Front/posthub-ui/src/App.vue b/PostList Front/posthub-ui/src/App.vue
-index fb3b0500650f30aa9d7d454bcaad8112066971ce..15a3ff09594c48d4c86a3a7eba073d8dd1a2d724 100644
+index fb3b0500650f30aa9d7d454bcaad8112066971ce..d8e047e9fefb0d96f62ae06bc6d62130000d00b5 100644
 --- a/PostList Front/posthub-ui/src/App.vue 
 +++ b/PostList Front/posthub-ui/src/App.vue 
-@@ -1,40 +1,130 @@
+@@ -1,40 +1,173 @@
  <script setup>
  import { ref } from 'vue'
++import { ArrowDown, ArrowUp } from '@element-plus/icons-vue'
  import http from './api/http'
  import { ElMessage } from 'element-plus'
  import ArtsTable from './components/ArtsTable.vue'
@@ -36,63 +37,67 @@ index fb3b0500650f30aa9d7d454bcaad8112066971ce..15a3ff09594c48d4c86a3a7eba073d8d
  <template>
 -  <div style="padding:24px; max-width:960px; margin:0 auto">
 -    <h1 style="font-size:42px; font-weight:800; margin-bottom:16px">PostHub UI</h1>
-+  <div class="app-layout">
-+    <div class="app-content">
-+      <div class="toolbar">
-+        <h1 class="app-title">posthub ui</h1>
++  <div class="app-page">
++    <header class="app-header">
++      <h1 class="app-title">posthub ui</h1>
++
++      <el-button
++        class="loader-toggle"
++        circle
++        size="small"
++        text
++        @click="toggleLoader"
++      >
++        <el-icon>
++          <component :is="loaderOpen ? ArrowUp : ArrowDown" />
++        </el-icon>
++      </el-button>
++    </header>
  
 -    <RightPanel />
-+        <el-button class="loader-toggle" text size="small" @click="toggleLoader">
-+          {{ loaderOpen ? 'Скрыть служебные действия' : 'Показать служебные действия' }}
-+        </el-button>
-+      </div>
++    <div class="app-main">
++      <div class="app-main__content">
++        <transition name="fade-expand">
++          <div v-if="loaderOpen" class="loader-panel">
++            <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
++              Загрузить данные с Django
++            </el-button>
++          </div>
++        </transition>
  
 -    <el-button type="primary" :loading="loading" @click="loadData">
 -      Загрузить данные с Django
 -    </el-button>
-+      <transition name="fade-expand">
-+        <div v-if="loaderOpen" class="loader-panel">
-+          <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
-+            Загрузить данные с Django
-+          </el-button>
++        <div class="table-wrapper">
++          <ArtsTable :items="items" />
 +        </div>
-+      </transition>
++      </div>
  
 -    <div style="margin-top:16px">
 -      <ArtsTable :items="items" />
-+      <div class="table-wrapper">
-+        <ArtsTable :items="items" />
-+      </div>
++      <aside class="app-main__sidebar">
++        <RightPanel />
++      </aside>
      </div>
-+
-+    <RightPanel />
    </div>
  </template>
 +
 +<style scoped>
-+.app-layout {
-+  display: flex;
-+  gap: 28px;
++.app-page {
 +  min-height: 100vh;
-+  background: var(--el-bg-color-page);
-+}
-+
-+.app-content {
-+  flex: 1;
-+  min-width: 0;
-+  padding: 32px 48px 48px;
++  padding: 40px 32px 48px 48px;
 +  display: flex;
 +  flex-direction: column;
-+  align-items: stretch;
-+  gap: 28px;
++  background: var(--el-bg-color-page);
 +  box-sizing: border-box;
 +}
 +
-+.toolbar {
++.app-header {
 +  display: flex;
-+  flex-direction: column;
++  flex-wrap: wrap;
 +  align-items: center;
-+  gap: 12px;
++  justify-content: center;
++  gap: 16px;
 +}
 +
 +.app-title {
@@ -105,8 +110,19 @@ index fb3b0500650f30aa9d7d454bcaad8112066971ce..15a3ff09594c48d4c86a3a7eba073d8d
 +}
 +
 +.loader-toggle {
-+  text-transform: lowercase;
-+  letter-spacing: 0.2px;
++  --el-button-text-color: var(--el-text-color-secondary);
++  --el-button-hover-text-color: var(--el-text-color-primary);
++  --el-button-hover-bg-color: var(--el-fill-color-lighter);
++  --el-button-active-bg-color: var(--el-fill-color);
++  border-radius: 50%;
++  box-shadow: 0 0 0 1px var(--el-border-color) inset;
++  width: 32px;
++  height: 32px;
++  padding: 0;
++}
++
++.loader-toggle .el-icon {
++  font-size: 16px;
 +}
 +
 +.loader-panel {
@@ -116,7 +132,29 @@ index fb3b0500650f30aa9d7d454bcaad8112066971ce..15a3ff09594c48d4c86a3a7eba073d8d
 +
 +.table-wrapper {
 +  width: min(840px, 100%);
++}
++
++.app-main {
++  display: flex;
++  align-items: flex-start;
++  gap: 32px;
++  margin-top: 32px;
++}
++
++.app-main__content {
++  flex: 1 1 0;
++  min-width: 0;
++  display: flex;
++  flex-direction: column;
++  gap: 24px;
++}
++
++.app-main__sidebar {
++  flex: 0 0 clamp(320px, 30vw, 460px);
 +  align-self: stretch;
++  display: flex;
++  justify-content: flex-start;
++  align-items: stretch;
 +}
 +
 +.fade-expand-enter-active,
@@ -131,27 +169,33 @@ index fb3b0500650f30aa9d7d454bcaad8112066971ce..15a3ff09594c48d4c86a3a7eba073d8d
 +}
 +
 +@media (max-width: 960px) {
-+  .app-layout {
++  .app-page {
++    padding: 24px 16px 32px;
++  }
++  .app-main {
 +    flex-direction: column;
-+    gap: 16px;
++    gap: 24px;
 +  }
 +
-+  .app-content {
-+    padding: 24px;
++  .app-main__sidebar {
++    width: 100%;
++    flex: 1 1 auto;
++    justify-content: center;
 +  }
 +}
 +</style>
 diff --git a/PostList Front/posthub-ui/src/components/RightPanel.css b/PostList Front/posthub-ui/src/components/RightPanel.css
-index 94e864f724da53add8542684d619bae0ae632255..58f5b08fc2f49971b9e11352bae236858f907e3b 100644
+index 94e864f724da53add8542684d619bae0ae632255..3937c6c969d6c26a4666b33be9ed4d696061190f 100644
 --- a/PostList Front/posthub-ui/src/components/RightPanel.css   
 +++ b/PostList Front/posthub-ui/src/components/RightPanel.css   
 @@ -1,77 +1,142 @@
  /* Правая панель */
  .right-panel {
 -    width: 34%;
-+    flex: 0 0 clamp(360px, 32vw, 520px);
-+    width: clamp(360px, 32vw, 520px);
-     height: 100vh;
+-    height: 100vh;
++    width: 100%;
++    max-width: 460px;
++    max-height: calc(100vh - 120px);
      background: var(--el-bg-color-page);
      border-left: 1px solid var(--el-border-color);
      overflow-y: auto;
@@ -280,12 +324,12 @@ index 94e864f724da53add8542684d619bae0ae632255..58f5b08fc2f49971b9e11352bae23685
 +
 +@media (max-width: 960px) {
 +    .right-panel {
-+        flex: 0 0 auto;
-+        width: 100%;
-+        height: auto;
++        max-height: none;
 +        border-left: none;
 +        border-top: 1px solid var(--el-border-color);
 +        padding: 16px 12px;
++        margin-left: 0;
++        margin-right: 0;
 +    }
 +}
  

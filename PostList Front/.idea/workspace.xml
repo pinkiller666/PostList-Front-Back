@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="112e4ba9-6d88-47f2-9166-782c366a67bd" name="Changes" comment="" />
+    <list default="true" id="112e4ba9-6d88-47f2-9166-782c366a67bd" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../codex.patch" beforeDir="false" afterPath="$PROJECT_DIR$/../codex.patch" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -48,7 +50,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/enia/Desktop/Python/PostList-Front-Back/codex.patch",
+    "last_opened_file_path": "C:/Users/enia/Desktop/Python/PostList-Front-Back/PostList Front/codexFront.patch",
     "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -81,7 +83,7 @@
       <updated>1761911829498</updated>
       <workItem from="1761911830717" duration="17086000" />
       <workItem from="1762264660621" duration="4078000" />
-      <workItem from="1762789648415" duration="4037000" />
+      <workItem from="1762789648415" duration="8296000" />
     </task>
     <servers />
   </component>

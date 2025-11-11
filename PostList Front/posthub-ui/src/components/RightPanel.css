@@ -1,18 +1,20 @@
 /* Правая панель */
 .right-panel {
-    width: 34%;
+    flex: 0 0 320px;
+    width: 320px;
     height: 100vh;
+    margin-left: auto;
     background: var(--el-bg-color-page);
     border-left: 1px solid var(--el-border-color);
     overflow-y: auto;
-    padding: 12px;
-    /* outline: 3px solid hotpink !important;  ← тестовую рамку можно убрать */
+    padding: 16px 14px;
+    box-sizing: border-box;
 }
 
 /* Ровная сетка строки */
 .art-row {
     display: grid;
-    grid-template-columns: 2.2fr 0.5fr 0.8fr 0.9fr 0.9fr 0.9fr;
+    grid-template-columns: 2fr 0.8fr 1.05fr 1.05fr 1.05fr 0.9fr;
     align-items: center;
     gap: 10px;
     padding: 10px 12px;
@@ -36,6 +38,11 @@
     overflow: hidden;
 }
 
+.art-status {
+    display: flex;
+    justify-content: center;
+}
+
 /* Вертикальные столбики */
 .vstack {
     display: flex;
@@ -46,32 +53,88 @@
     justify-content: center;
 }
 
-/* Иконки-эмодзи */
-.ico {
-    font-size: 18px;
-    line-height: 1;
-    opacity: 0.35;
-    transform: translateZ(0);
-    transition: opacity 0.12s ease, filter 0.12s ease;
+/* Текстовые бейджи */
+.label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 52px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: var(--el-fill-color-lighter);
+    color: var(--el-text-color-regular);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.1;
+    text-transform: lowercase;
+    letter-spacing: 0.2px;
+    opacity: 0.45;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
-.ico.active { opacity: 0.95; }
-.ico.status { font-size: 20px; opacity: 0.6; }
-.ico.status.done { opacity: 1; }
+.label.active {
+    opacity: 1;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: lowercase;
+    background: var(--el-fill-color-lighter);
+    color: var(--el-text-color-primary);
+    letter-spacing: 0.3px;
+    min-width: 96px;
+    text-align: center;
+}
+.status-pill.done {
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
+}
 
 /* Чекбоксы Element Plus — БЕЗ :deep, так как CSS внешний (глобальный) */
 .art-posted .el-checkbox {
     --el-checkbox-font-size: 12px;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .art-posted .el-checkbox__inner {
     width: 16px;
     height: 16px;
 }
+.art-posted .el-checkbox__input { margin-right: 0; }
+
+@media (max-width: 960px) {
+    .right-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        height: auto;
+        border-left: none;
+        border-top: 1px solid var(--el-border-color);
+    }
+}
 
 /* Микро-адаптив */
 @media (max-width: 1200px) {
     .art-row {
-        grid-template-columns: 2.2fr 0.5fr 0.7fr 0.8fr 0.8fr 0.8fr;
+        grid-template-columns: 1.9fr 0.8fr 1fr 1fr 1fr 0.9fr;
         gap: 8px;
     }
-    .ico { font-size: 17px; }
+    .label {
+        min-width: 48px;
+        font-size: 12px;
+        padding: 3px 6px;
+    }
+    .status-pill {
+        min-width: 84px;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
 }

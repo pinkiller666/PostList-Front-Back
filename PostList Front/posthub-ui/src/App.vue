@@ -24,17 +24,66 @@ const loadData = async () => {
 </script>
 
 <template>
-  <div style="padding:24px; max-width:960px; margin:0 auto">
-    <h1 style="font-size:42px; font-weight:800; margin-bottom:16px">PostHub UI</h1>
+  <div class="app-layout">
+    <div class="app-content">
+      <h1 class="app-title">posthub ui</h1>
+
+      <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
+        Загрузить данные с Django
+      </el-button>
+
+      <div class="table-wrapper">
+        <ArtsTable :items="items" />
+      </div>
+    </div>
 
     <RightPanel />
-
-    <el-button type="primary" :loading="loading" @click="loadData">
-      Загрузить данные с Django
-    </el-button>
-
-    <div style="margin-top:16px">
-      <ArtsTable :items="items" />
-    </div>
   </div>
 </template>
+
+<style scoped>
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--el-bg-color-page);
+}
+
+.app-content {
+  flex: 1;
+  min-width: 0;
+  padding: 32px 48px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  box-sizing: border-box;
+}
+
+.app-title {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: lowercase;
+  margin: 0;
+  text-align: center;
+}
+
+.load-button {
+  align-self: center;
+}
+
+.table-wrapper {
+  width: min(840px, 100%);
+  align-self: stretch;
+}
+
+@media (max-width: 960px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .app-content {
+    padding: 24px;
+  }
+}
+</style>

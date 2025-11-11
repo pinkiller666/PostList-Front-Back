@@ -3,6 +3,8 @@ import { ref } from 'vue'
 import './RightPanel.css'
 
 // временные данные (пока без API)
+const statusLabel = (status) => (status ? status.replace(/_/g, ' ') : '')
+
 const arts = ref([
   {
     id: 1,
@@ -39,31 +41,29 @@ const arts = ref([
 
       <!-- Статус -->
       <div class="art-status">
-        <el-tooltip :content="art.status">
-          <span class="ico status" :class="{ done: art.status === 'complete' }">
-            {{ art.status === 'complete' ? '✅' : '⭕' }}
-          </span>
-        </el-tooltip>
+        <span class="status-pill" :class="{ done: art.status === 'complete' }">
+          {{ statusLabel(art.status) }}
+        </span>
       </div>
 
       <!-- Тип персонажа -->
       <div class="art-type vstack">
-        <span class="ico" :class="{ active: art.human }">👤</span>
-        <span class="ico" :class="{ active: art.furry }">🐺</span>
+        <span class="label" :class="{ active: art.human }">human</span>
+        <span class="label" :class="{ active: art.furry }">furry</span>
       </div>
 
       <!-- Контент -->
       <div class="art-content vstack">
-        <span class="ico" :class="{ active: art.sfw }">⚪</span>
-        <span class="ico" :class="{ active: art.nsfw }">🔞</span>
-        <span class="ico" :class="{ active: art.crop }">✂️</span>
+        <span class="label" :class="{ active: art.sfw }">sfw</span>
+        <span class="label" :class="{ active: art.nsfw }">nsfw</span>
+        <span class="label" :class="{ active: art.crop }">crop</span>
       </div>
 
       <!-- Куда постить (план) -->
       <div class="art-post vstack">
-        <span class="ico" :class="{ active: art.post_targets.twi16 }">🕊️</span>
-        <span class="ico" :class="{ active: art.post_targets.twi18 }">🦋</span>
-        <span class="ico" :class="{ active: art.post_targets.bsky }">🌐</span>
+        <span class="label" :class="{ active: art.post_targets.twi16 }">twi16</span>
+        <span class="label" :class="{ active: art.post_targets.twi18 }">twi18</span>
+        <span class="label" :class="{ active: art.post_targets.bsky }">bsky</span>
       </div>
 
       <!-- Уже запощено (факт) -->

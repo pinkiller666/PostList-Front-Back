@@ -1,4 +1,4 @@
-import { mapArtFromApi, mapArtToApi } from "./artMapper"
+import { mapArtFromApi, mapArtToApi } from "./artMappers.js"
 
 const BASE_URL = "http://127.0.0.1:8081/api"  // или куда у тебя сейчас смотрит API
 

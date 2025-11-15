@@ -2,7 +2,7 @@
 import { ref, nextTick, onMounted } from 'vue'
 import { Lock, Unlock, Edit, Delete } from '@element-plus/icons-vue'
 import './RightPanel.css'
-import { mapArtFromApi } from '../api/artMapper'
+import { mapArtFromApi } from '../api/artMappers'
 
 
 const statusLabel = (s) => (s ? s.replace(/_/g, ' ') : '')

@@ -4,16 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="112e4ba9-6d88-47f2-9166-782c366a67bd" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../PostListBack/core/management/commands/clear_demo_arts.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../PostListBack/core/management/commands/seed_demo_arts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PostListBack/core/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PostListBack/core/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PostListBack/core/migrations/0001_initial.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PostListBack/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PostListBack/core/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PostListBack/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PostListBack/core/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PostListBack/db.sqlite3" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../codex.patch" beforeDir="false" afterPath="$PROJECT_DIR$/../codex.patch" afterDir="false" />
-    </list>
+    <list default="true" id="112e4ba9-6d88-47f2-9166-782c366a67bd" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,9 +13,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="JavaScript File" />
         <option value="Vue Composition API Component" />
         <option value="CSS File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -92,7 +83,7 @@
       <workItem from="1761911830717" duration="17086000" />
       <workItem from="1762264660621" duration="4078000" />
       <workItem from="1762789648415" duration="10458000" />
-      <workItem from="1762878731244" duration="39238000" />
+      <workItem from="1762878731244" duration="42942000" />
     </task>
     <servers />
   </component>

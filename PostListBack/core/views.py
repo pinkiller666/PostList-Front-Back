@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import Art, ArtStatus, HowLewd, IsHuman, IsFurry, PostState
 from .serializer import serialize_art
 
+
 def validate_choice(value, choices, field_name):
     valid_values = [c[0] for c in choices]
     if value not in valid_values:
@@ -47,13 +48,13 @@ def arts_list(request):
 
         # choices валидация
         for fld, choices in (
-            ("status", ArtStatus.choices),
-            ("how_lewd", HowLewd.choices),
-            ("human_type", IsHuman.choices),
-            ("furry_type", IsFurry.choices),
-            ("bsky_posted", PostState.choices),
-            ("decent_twi_posted", PostState.choices),
-            ("lewd_twi_posted", PostState.choices),
+                ("status", ArtStatus.choices),
+                ("how_lewd", HowLewd.choices),
+                ("human_type", IsHuman.choices),
+                ("furry_type", IsFurry.choices),
+                ("bsky_posted", PostState.choices),
+                ("decent_twi_posted", PostState.choices),
+                ("lewd_twi_posted", PostState.choices),
         ):
             if fld in data and data[fld] is not None:
                 err = validate_choice(data[fld], choices, fld)
@@ -107,13 +108,13 @@ def art_detail(request, art_id: int):
 
         # choices валидация
         for fld, choices in (
-            ("status", ArtStatus.choices),
-            ("how_lewd", HowLewd.choices),
-            ("human_type", IsHuman.choices),
-            ("furry_type", IsFurry.choices),
-            ("bsky_posted", PostState.choices),
-            ("decent_twi_posted", PostState.choices),
-            ("lewd_twi_posted", PostState.choices),
+                ("status", ArtStatus.choices),
+                ("how_lewd", HowLewd.choices),
+                ("human_type", IsHuman.choices),
+                ("furry_type", IsFurry.choices),
+                ("bsky_posted", PostState.choices),
+                ("decent_twi_posted", PostState.choices),
+                ("lewd_twi_posted", PostState.choices),
         ):
             if fld in data and data[fld] is not None:
                 err = validate_choice(data[fld], choices, fld)

@@ -7,3 +7,6 @@ PostListBack/db.sqlite3
 PostListFront/.idea/workspace.xml
 PostListBack/.idea/PostList.iml
 PostListBack/.idea/misc.xml
+/PostListBack/core/__pycache__
+*.pyc
+/PostListFront/.idea

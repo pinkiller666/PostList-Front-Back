@@ -2,12 +2,10 @@
 import { ref, nextTick, onMounted } from 'vue'
 import { Lock, Unlock, Edit, Delete } from '@element-plus/icons-vue'
 import './RightPanel.css'
+import { mapArtFromApi } from '../api/artMapper'
+
 
 const statusLabel = (s) => (s ? s.replace(/_/g, ' ') : '')
-
-/* =========================
-   API: загрузка артов с бэка
-   ========================= */
 
 const API_BASE = 'http://127.0.0.1:8081'          // если нужно — поправишь порт/хост
 const ARTS_ENDPOINT = `${API_BASE}/api/arts/`     // эндпоинт arts_list
@@ -15,43 +13,6 @@ const ARTS_ENDPOINT = `${API_BASE}/api/arts/`     // эндпоинт arts_list
 const arts = ref([])
 const isLoading = ref(false)
 const loadError = ref(null)
-
-/**
- * Маппим сырые данные с бэка под структуру,
- * с которой уже работает верстка (human/furry/sfw/nsfw/…)
- */
-const mapArtFromApi = (row) => {
-  return {
-    id: row.id,
-    name: row.name,
-    status: row.status,
-
-    // человек / фурри — на фронте булевы
-    human: row.human_type === 'yes',
-    furry: row.furry_type === 'yes',
-
-    // SFW / NSFW / NSFW+crop
-    sfw: !!row.is_sfw,
-    nsfw: !!row.is_nsfw,
-    crop: !!row.is_nsfw_plus_crop,
-
-    // куда планируем постить
-    post_targets: {
-      twi16: !!row.post_on_decent_twi,
-      twi18: !!row.post_on_lewd_twi,
-      bsky: !!row.post_on_bsky,
-    },
-
-    // уже выложено — пока сводим к простому bool: posted = (state === 'posted')
-    posted: {
-      twi16: row.decent_twi_posted === 'posted',
-      twi18: row.lewd_twi_posted === 'posted',
-      bsky: row.bsky_posted === 'posted',
-    },
-
-    locked: !!row.locked,
-  }
-}
 
 const loadArts = async () => {
   isLoading.value = true
@@ -120,10 +81,6 @@ const arts = ref([
   }
 ])
 */
-
-/* =========================
-   Остальная логика как была
-   ========================= */
 
 const toggleRowLock = (art) => {
   art.locked = !art.locked

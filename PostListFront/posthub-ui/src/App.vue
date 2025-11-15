@@ -9,11 +9,12 @@ const loading = ref(false)
 const items = ref([])
 const showContent = ref(false)
 
+const contentPanelId = 'central-panel'
+
 const loadData = async () => {
   loading.value = true
   try {
-    const { data } = await http.get('/api/arts/')   // тот же эндпоинт
-    // предполагаю структуру { items: [...] }
+    const { data } = await http.get('/api/arts/')
     items.value = Array.isArray(data?.items) ? data.items : []
     ElMessage.success('Загружено')
   } catch (e) {
@@ -33,37 +34,49 @@ const toggleContent = () => {
     <RightPanel />
 
     <div class="content-shell">
-      <transition name="content-fade" mode="out-in">
-        <div v-if="showContent" key="content" class="app-content">
-          <div class="content-controls">
+      <div class="content-transition-wrapper" :id="contentPanelId">
+        <transition name="content-fade" mode="out-in">
+          <div v-if="showContent" key="content" class="app-content">
+            <div class="content-controls">
+              <el-button
+                  class="toggle-button"
+                  type="primary"
+                  plain
+                  size="small"
+                  :aria-expanded="showContent"
+                  :aria-controls="contentPanelId"
+                  @click="toggleContent"
+              >
+                Скрыть центральную панель
+              </el-button>
+            </div>
+
+            <h1 class="app-title">posthub ui</h1>
+
+            <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
+              Загрузить данные с Django
+            </el-button>
+
+            <div class="table-wrapper">
+              <ArtsTable :items="items" />
+            </div>
+          </div>
+
+          <div v-else key="placeholder" class="content-placeholder">
             <el-button
-              class="toggle-button"
-              type="primary"
-              plain
-              size="small"
-              @click="toggleContent"
+                class="toggle-button"
+                type="primary"
+                plain
+                size="small"
+                :aria-expanded="showContent"
+                :aria-controls="contentPanelId"
+                @click="toggleContent"
             >
-              Скрыть центральную панель
+              Открыть центральную панель
             </el-button>
           </div>
-
-          <h1 class="app-title">posthub ui</h1>
-
-          <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
-            Загрузить данные с Django
-          </el-button>
-
-          <div class="table-wrapper">
-            <ArtsTable :items="items" />
-          </div>
-        </div>
-
-        <div v-else key="placeholder" class="content-placeholder">
-          <el-button class="toggle-button" type="primary" plain size="small" @click="toggleContent">
-            Открыть центральную панель
-          </el-button>
-        </div>
-      </transition>
+        </transition>
+      </div>
     </div>
   </div>
 </template>
@@ -79,6 +92,12 @@ const toggleContent = () => {
 .content-shell {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: stretch;
+}
+
+.content-transition-wrapper {
+  flex: 1;
   display: flex;
   align-items: stretch;
 }

@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q, CheckConstraint
+from django.core.exceptions import ValidationError
 
 
 class ArtStatus(models.TextChoices):
@@ -26,12 +28,6 @@ class HowLewd(models.TextChoices):
     LEWD_WITH_SFW_VARIANT = "lewd_with_sfw_variant", "NSFW + SFW-кроп/спойлер"
 
 
-class WhereToPost(models.TextChoices):
-    BLSKY = "blsky", "Bluesky"
-    TWI_16 = "twi16", "Твиттер 16+"
-    TWI_18 = "twi18", "Твиттер 18+"
-
-
 class PostState(models.TextChoices):
     NOT_POSTED = "not_posted", "Не выложено"
     SCHEDULED = "scheduled", "Запланировано"
@@ -48,6 +44,8 @@ class Art(models.Model):
         db_index=True,
     )
 
+    locked = models.BooleanField(default=False)
+
     # На будущее лучше DecimalField(max_digits=10, decimal_places=2)
     price = models.IntegerField(default=0)
 
@@ -63,11 +61,9 @@ class Art(models.Model):
         default=IsHuman.YES,
     )
 
-    how_lewd = models.CharField(
-        max_length=32,
-        choices=HowLewd.choices,
-        default=HowLewd.ONLY_DECENT,
-    )
+    is_nsfw = models.BooleanField(default=False)
+    is_sfw = models.BooleanField(default=False)
+    is_nsfw_plus_crop = models.BooleanField(default=False)
 
     # куда планируем постить
     post_on_bsky = models.BooleanField(default=False)
@@ -96,6 +92,50 @@ class Art(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
+        # DB-уровень: не даём сохранить невозможные комбинации даже при прямой работе с моделью
+        constraints = [
+            # Нельзя одновременно иметь полноценную SFW и режим "NSFW + crop"
+            CheckConstraint(
+                check=~(
+                        Q(is_nsfw_plus_crop=True) &
+                        Q(is_sfw=True)
+                ),
+                name="art_no_sfw_with_nsfw_plus_crop",
+            ),
+            # "NSFW + crop" требует существования полноценной NSFW-версии
+            CheckConstraint(
+                check=~(
+                        Q(is_nsfw_plus_crop=True) &
+                        Q(is_nsfw=False)
+                ),
+                name="art_nsfw_plus_crop_requires_nsfw",
+            ),
+        ]
+
+    def clean(self):
+        super().clean()
+
+        errors = {}
+
+        if self.is_nsfw_plus_crop and self.is_sfw:
+            msg = (
+                "Нельзя одновременно иметь полноценную SFW-версию "
+                "и режим «NSFW + crop» — либо нормальная SFW, либо только кроп."
+            )
+            errors["is_sfw"] = msg
+            errors["is_nsfw_plus_crop"] = msg
+
+        if self.is_nsfw_plus_crop and not self.is_nsfw:
+            msg = (
+                "Режим «NSFW + crop» возможен только если есть полноценная "
+                "NSFW-версия (is_nsfw=True)."
+            )
+            errors["is_nsfw"] = msg
+            errors["is_nsfw_plus_crop"] = msg
+
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self) -> str:
         return str(self.name)

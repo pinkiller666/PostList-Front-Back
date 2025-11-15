@@ -1,115 +1,483 @@
-/* Панель с артами (теперь слева) */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap');
+
+:root {
+    /* Базовая типографика */
+    --font-size-base: 1rem;          /* 16px */
+    --font-size-s: 0.8125rem;        /* 13px */
+    --font-size-xs: 0.75rem;         /* 12px */
+
+    /* Отступы / ритм */
+    --space-xs: 0.25rem;             /* 4px */
+    --space-s: 0.375rem;             /* 6px */
+    --space-m: 0.75rem;              /* 12px */
+    --space-l: 1rem;                 /* 16px */
+    --space-xl: 1.5rem;              /* 24px */
+
+    /* Сетка и блоки */
+    --panel-width: 45rem;            /* 720px */
+    --art-row-radius: 1rem;          /* 16px */
+    --chip-radius: 0.625rem;         /* 10px */
+    --art-row-item-height: 2rem;     /* 32px – высота строки/чипса/чекбокса */
+
+    /* Иконки / action-кнопки */
+    --icon-btn-size: 1.375rem;       /* ~22px */
+    --icon-font-size: 1rem;          /* 16px */
+    --name-actions-offset: -2em;     /* смещение обёртки иконок влево от названия */
+}
+
+/* Панель слева */
 .right-panel {
-    flex: 0 0 480px;
-    width: 480px;
+    flex: 0 0 var(--panel-width);
+    width: var(--panel-width);
     height: 100vh;
     margin: 0;
     background: var(--el-bg-color-page);
     border-right: 1px solid var(--el-border-color);
     overflow-y: auto;
-    padding: 20px 18px;
+    padding: 1.75rem 1.5rem; /* 28px 24px */
+    box-sizing: border-box;
+    font-family: 'Manrope', 'Inter', 'Segoe UI', sans-serif;
+    color: var(--el-text-color-primary);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.125rem;   /* 18px */
+    padding-bottom: 0.875rem;  /* 14px */
+    border-bottom: 1px solid var(--el-border-color-light);
+}
+
+.panel-title {
+    font-size: 1.25rem;   /* 20px */
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin: 0;
+}
+
+/* Список карточек */
+.panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);  /* 12px */
+}
+
+/* Карточка */
+.art-row {
+    background: var(--el-bg-color);
+    border-radius: var(--art-row-radius);
+    border: 1px solid var(--el-border-color-lighter);
+    padding: 0.625rem 1rem 0.875rem; /* 10px 16px 14px */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs); /* 4px */
+    transition:
+            background 0.15s ease,
+            box-shadow 0.15s ease,
+            border-color 0.15s ease;
+}
+
+/* без эффекта наведения */
+.art-row:hover {
+    background: var(--el-bg-color);
+    box-shadow: none;
+    border-color: var(--el-border-color-lighter);
+}
+
+/* ВЕРХНЯЯ ПОЛОСА */
+.art-row-header {
+    display: grid;
+    grid-template-columns: 3fr 0.95fr 1.1fr 1.1fr 1.1fr 0.9fr;
+    align-items: center;
+    column-gap: 0.625rem; /* 10px */
+}
+
+.header-lock {
+    display: flex;
+    align-items: flex-end;   /* ближе к названию */
+    justify-content: center; /* по центру колонки */
+}
+
+.header-posted {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: var(--space-m); /* 12px */
     box-sizing: border-box;
 }
 
-/* Ровная сетка строки */
-.art-row {
+/* ОСНОВНАЯ СЕТКА */
+.art-row-body {
     display: grid;
-    grid-template-columns: 2fr 0.8fr 1.05fr 1.05fr 1.05fr 0.9fr;
+    grid-template-columns: 3fr 0.95fr 1.1fr 1.1fr 1.1fr 0.9fr;
     align-items: center;
-    gap: 10px;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--el-border-color-lighter);
-    background: var(--el-bg-color);
-    transition: background 0.15s ease, box-shadow 0.15s ease;
+    column-gap: 0.625rem; /* 10px */
 }
-.art-row + .art-row { margin-top: 6px; }
-.art-row:hover { background: var(--el-fill-color-light); }
 
-/* Название — центр, до 3 строк */
-.art-name {
-    font-weight: 700;
-    font-size: 16px;
+/* Название + замок + иконки */
+.art-name-wrap {
+    position: relative;
+    padding-top: 0rem; /* место под замочек сверху */
     text-align: center;
-    line-height: 1.28;
+}
+
+.art-name {
+    font-weight: 500;
+    font-size: var(--font-size-base); /* 16px */
+    line-height: 1.32;
     word-break: break-word;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    text-align: center;
 }
 
-.art-status {
-    display: flex;
-    justify-content: center;
+.art-name-wrap .floating-lock {
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    transform: translate(-50%, -60%);
+    z-index: 1;
 }
 
-/* Вертикальные столбики */
+/* Вертикальный стек внутри колонок */
 .vstack {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
-    min-height: 40px;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: var(--space-s);                /* 6px */
+    min-height: var(--art-row-item-height);
 }
 
-/* Текстовые бейджи */
-.label {
+/* Вертикальные разделители между логическими колонками в теле */
+.col-sep {
+    border-left: 1px solid var(--el-border-color-light);
+    padding-left: var(--space-m);       /* 12px */
+}
+
+/* Кнопки-лейблы (куда постить, типы и т.п.) */
+.label-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 52px;
-    padding: 4px 8px;
-    border-radius: 8px;
+    min-width: 3.5rem;                  /* 56px */
+    padding: 0.375rem 0.625rem;         /* 6px 10px */
+    border-radius: var(--chip-radius);  /* 10px */
     background: var(--el-fill-color-lighter);
     color: var(--el-text-color-regular);
-    font-size: 13px;
+    font-size: var(--font-size-s);      /* 13px */
     font-weight: 500;
-    line-height: 1.1;
     text-transform: lowercase;
     letter-spacing: 0.2px;
-    opacity: 0.45;
-    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+    opacity: 0.55;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+            opacity 0.18s ease,
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
+    min-height: var(--art-row-item-height);
 }
-.label.active {
+
+.label-button:hover {
+    opacity: 0.85;
+    background: var(--el-fill-color);
+}
+
+.label-button.active {
     opacity: 1;
     background: var(--el-color-primary-light-9);
     color: var(--el-color-primary);
+    border-color: var(--el-color-primary-light-7);
 }
 
-.status-pill {
+/* убираем чёрные рамки / фокусы */
+.label-button:focus,
+.label-button:focus-visible,
+.status-button:focus,
+.status-button:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Статус */
+.status-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 12px;
+    padding: 0.4375rem 1rem;           /* 7px 16px */
     border-radius: 999px;
-    font-size: 13px;
+    font-size: var(--font-size-s);     /* 13px */
     font-weight: 600;
     text-transform: lowercase;
     background: var(--el-fill-color-lighter);
     color: var(--el-text-color-primary);
     letter-spacing: 0.3px;
-    min-width: 96px;
-    text-align: center;
-}
-.status-pill.done {
-    background: var(--el-color-success-light-9);
-    color: var(--el-color-success);
+    min-width: 7rem;                   /* 112px */
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
 }
 
-/* Чекбоксы Element Plus — БЕЗ :deep, так как CSS внешний (глобальный) */
-.art-posted .el-checkbox {
-    --el-checkbox-font-size: 12px;
-    margin: 0;
-    display: flex;
-    justify-content: center;
+.status-button.done {
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
+    border-color: var(--el-color-success-light-5);
+}
+
+/* Заголовок над чекбоксами */
+.col-head {
+    font-size: var(--font-size-xs);    /* 12px */
+    color: var(--el-text-color-secondary);
+    opacity: 0.8;
+    text-transform: lowercase;
+    text-align: center;
+    display: block;
+    width: 100%;
+}
+
+/* Чекбоксы: строго по центру колонки,
+   вертикально синхронно с колонкой соцсетей */
+.art-post,
+.art-posted {
     align-items: center;
 }
-.art-posted .el-checkbox__inner {
-    width: 16px;
-    height: 16px;
+
+.art-posted .el-checkbox {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--art-row-item-height) !important;
 }
-.art-posted .el-checkbox__input { margin-right: 0; }
+
+.art-posted .el-checkbox__inner {
+    width: 1rem;    /* 16px */
+    height: 1rem;
+}
+
+.art-posted .el-checkbox__input {
+    margin-right: 0;
+}
+
+/* Заморозка: блокируем клики по содержимому, замок живой */
+.art-row.frozen .label-button,
+.art-row.frozen .status-button,
+.art-row.frozen .el-checkbox {
+    pointer-events: none;
+}
+
+.art-row.frozen .lock-icon-btn {
+    pointer-events: auto;
+}
+
+/* Кнопка-замок */
+.lock-icon-btn {
+    width: 1.75rem;                 /* 28px */
+    height: 1.75rem;
+    min-width: 1.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--el-border-color-lighter);
+    background: transparent;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--el-text-color-disabled);
+    transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            color 0.18s ease,
+            box-shadow 0.18s ease;
+}
+
+.lock-icon-btn .el-icon {
+    font-size: var(--icon-font-size); /* 16px */
+}
+
+.lock-icon-btn:hover {
+    background: var(--el-fill-color-lighter) !important;
+    border-color: var(--el-border-color) !important;
+    color: var(--el-text-color-regular) !important;
+}
+
+.lock-icon-btn.is-locked {
+    background: var(--el-fill-color-lighter);
+    border-color: var(--el-border-color);
+    color: var(--el-text-color-regular);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+.lock-icon-btn.is-unlocked {
+    background: transparent;
+    border-color: var(--el-border-color-lighter);
+    color: var(--el-text-color-disabled);
+}
+
+.lock-icon-btn:focus,
+.lock-icon-btn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.art-posted .el-checkbox__input.is-focus .el-checkbox__inner {
+    box-shadow: none;
+}
+
+/* Глушим фокусы Element Plus */
+.label-button:focus,
+.label-button:focus-visible,
+.status-button:focus,
+.status-button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.lock-icon-btn:focus,
+.lock-icon-btn:focus-visible,
+.lock-icon-btn.is-focus,
+.lock-icon-btn .is-focus,
+.lock-icon-btn .el-button:focus,
+.lock-icon-btn .el-button:focus-visible,
+.lock-icon-btn .el-button.is-focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.lock-icon-btn .el-button__inner:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.right-panel button:focus,
+.right-panel button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Для Element Plus: "псевдофокус" через класс is-focus */
+.right-panel .is-focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Фикс для Firefox, если вдруг */
+.right-panel button::-moz-focus-inner {
+    border: 0;
+}
+
+/* Контейнер иконок редактирования */
+.art-name-actions {
+    position: absolute;
+    left: -0.80em;   /* выносим иконки влево */
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 0px;               /* 6px */
+
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    transition: opacity 0.15s ease;
+
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Показываем иконки только при наведении на строку */
+.art-row:hover .art-name-wrap .art-name-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.art-name-action-btn {
+    padding: 0;
+    width: var(--icon-btn-size);
+    height: var(--icon-btn-size);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    --el-button-text-color: var(--el-text-color-placeholder);
+    --el-button-hover-text-color: var(--el-text-color-secondary);
+}
+
+.art-name-action-btn .el-icon {
+    font-size: var(--icon-font-size);
+}
+
+/* Зона инпута, чтобы он не прилипал к краям */
+.art-name-edit .el-input {
+    width: 100%;
+}
+
+/* Фокус для кнопок-иконок редактирования */
+.art-name-action-btn:focus,
+.art-name-action-btn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.art-name-actions .el-button + .el-button {
+    margin-left: 0 !important; /* глушим их дефолт */
+}
+
+/* Режим редактирования названия: делаем el-input невидимым внешне */
+.art-name-edit .el-input__wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    height: auto !important;
+}
+
+.art-name-edit .el-input {
+    width: 100%;
+}
+
+.art-name-edit input {
+    font-size: 16px;               /* совпадает с .art-name */
+    font-weight: 500;              /* совпадает с .art-name */
+    line-height: 1.32;             /* совпадает с .art-name */
+    text-align: center;            /* совпадает с .art-name */
+
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    color: var(--el-text-color-primary) !important;
+
+    /* Чтобы текст не прыгал вверх-вниз */
+    vertical-align: middle;
+}
+
+/* Убираем нижнюю красную волну при выделении неправильных слов */
+.art-name-edit input::-webkit-input-placeholder {
+    color: transparent;
+}
+
+
+/* Адаптив */
+@media (max-width: 1200px) {
+    .art-row-header,
+    .art-row-body {
+        grid-template-columns: 2.6fr 0.9fr 1.05fr 1.05fr 1.05fr 0.9fr;
+    }
+}
 
 @media (max-width: 960px) {
     .right-panel {
@@ -118,23 +486,15 @@
         height: auto;
         border-right: none;
         border-bottom: 1px solid var(--el-border-color);
+        padding: 1.25rem 1rem; /* 20px 16px */
     }
 }
 
-/* Микро-адаптив */
-@media (max-width: 1200px) {
-    .art-row {
-        grid-template-columns: 1.9fr 0.8fr 1fr 1fr 1fr 0.9fr;
-        gap: 8px;
-    }
-    .label {
-        min-width: 48px;
-        font-size: 12px;
-        padding: 3px 6px;
-    }
-    .status-pill {
-        min-width: 84px;
-        padding: 5px 10px;
-        font-size: 12px;
-    }
-}
+/* VISUAL LATER:
+                    когда замочек закрыт, кнопки удаления и редактирования не появляются
+                    убрать синие рамки от наведения и\или кликов
+                    убрать возможность появления курсора на названии когда нет режима редактирования
+                    добавить функционал удаления
+                    убрать чекбоксы напротив тех соцсетей которые не выбраны
+*/
+

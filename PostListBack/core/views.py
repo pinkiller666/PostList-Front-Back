@@ -2,7 +2,7 @@ import json
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
 from .models import Art, ArtStatus, HowLewd, IsHuman, IsFurry, PostState
-
+from .serializer import serialize_art
 
 def validate_choice(value, choices, field_name):
     valid_values = [c[0] for c in choices]
@@ -23,26 +23,6 @@ def parse_int(value, field_name):
         return JsonResponse({
             "detail": f"Поле '{field_name}' должно быть целым числом."
         }, status=400)
-
-
-def serialize_art(a: Art) -> dict:
-    return {
-        "id": a.id,
-        "name": a.name,
-        "status": a.status,
-        "how_lewd": a.how_lewd,
-        "human_type": a.human_type,
-        "furry_type": a.furry_type,
-        "price": a.price,
-        "post_on_bsky": a.post_on_bsky,
-        "post_on_decent_twi": a.post_on_decent_twi,
-        "post_on_lewd_twi": a.post_on_lewd_twi,
-        "bsky_posted": a.bsky_posted,
-        "decent_twi_posted": a.decent_twi_posted,
-        "lewd_twi_posted": a.lewd_twi_posted,
-        "created_at": a.created_at.isoformat(),
-        "updated_at": a.updated_at.isoformat(),
-    }
 
 
 def healthcheck(request):
@@ -102,6 +82,7 @@ def arts_list(request):
             bsky_posted=data.get("bsky_posted") or Art._meta.get_field("bsky_posted").default,
             decent_twi_posted=data.get("decent_twi_posted") or Art._meta.get_field("decent_twi_posted").default,
             lewd_twi_posted=data.get("lewd_twi_posted") or Art._meta.get_field("lewd_twi_posted").default,
+            locked=bool(data.get("locked") or False),
         )
         return JsonResponse(serialize_art(a), status=201)
 
@@ -143,6 +124,7 @@ def art_detail(request, art_id: int):
         for field in [
             "name", "status", "how_lewd", "human_type", "furry_type",
             "bsky_posted", "decent_twi_posted", "lewd_twi_posted",
+            "locked",
         ]:
             if field in data and data[field] is not None:
                 setattr(a, field, data[field])

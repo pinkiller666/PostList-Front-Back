@@ -1,8 +1,8 @@
 diff --git a/PostListFront/posthub-ui/src/App.vue b/PostListFront/posthub-ui/src/App.vue
-index 7bc641ae29fd30bd468b7e979d907d388ac4f77d..8589c507beda13d8414b13b48ef3519c32472cf3 100644
+index 7bc641ae29fd30bd468b7e979d907d388ac4f77d..8c44e2b9caf6aa49739736c595f97f61f537b1c1 100644
 --- a/PostListFront/posthub-ui/src/App.vue
 +++ b/PostListFront/posthub-ui/src/App.vue
-@@ -1,89 +1,167 @@
+@@ -1,89 +1,187 @@
  <script setup>
  import { ref } from 'vue'
  import http from './api/http'
@@ -13,6 +13,8 @@ index 7bc641ae29fd30bd468b7e979d907d388ac4f77d..8589c507beda13d8414b13b48ef3519c
  const loading = ref(false)
  const items = ref([])
 +const showContent = ref(false)
++
++const contentPanelId = 'central-panel'
  
  const loadData = async () => {
    loading.value = true
@@ -38,48 +40,59 @@ index 7bc641ae29fd30bd468b7e979d907d388ac4f77d..8589c507beda13d8414b13b48ef3519c
 -    <div class="app-content">
 -      <h1 class="app-title">posthub ui</h1>
 +    <RightPanel />
++
++    <div class="content-shell">
++      <div class="content-transition-wrapper" :id="contentPanelId">
++        <transition name="content-fade" mode="out-in">
++          <div v-if="showContent" key="content" class="app-content">
++            <div class="content-controls">
++              <el-button
++                class="toggle-button"
++                type="primary"
++                plain
++                size="small"
++                :aria-expanded="showContent"
++                :aria-controls="contentPanelId"
++                @click="toggleContent"
++              >
++                Скрыть центральную панель
++              </el-button>
++            </div>
++
++            <h1 class="app-title">posthub ui</h1>
  
 -      <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
 -        Загрузить данные с Django
 -      </el-button>
-+    <div class="content-shell">
-+      <transition name="content-fade" mode="out-in">
-+        <div v-if="showContent" key="content" class="app-content">
-+          <div class="content-controls">
++            <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
++              Загрузить данные с Django
++            </el-button>
+ 
+-      <div class="table-wrapper">
+-        <ArtsTable :items="items" />
++            <div class="table-wrapper">
++              <ArtsTable :items="items" />
++            </div>
++          </div>
++
++          <div v-else key="placeholder" class="content-placeholder">
 +            <el-button
 +              class="toggle-button"
 +              type="primary"
 +              plain
 +              size="small"
++              :aria-expanded="showContent"
++              :aria-controls="contentPanelId"
 +              @click="toggleContent"
 +            >
-+              Скрыть центральную панель
++              Открыть центральную панель
 +            </el-button>
 +          </div>
- 
--      <div class="table-wrapper">
--        <ArtsTable :items="items" />
--      </div>
--    </div>
-+          <h1 class="app-title">posthub ui</h1>
- 
++        </transition>
+       </div>
+     </div>
+-
 -    <RightPanel />
-+          <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
-+            Загрузить данные с Django
-+          </el-button>
-+
-+          <div class="table-wrapper">
-+            <ArtsTable :items="items" />
-+          </div>
-+        </div>
-+
-+        <div v-else key="placeholder" class="content-placeholder">
-+          <el-button class="toggle-button" type="primary" plain size="small" @click="toggleContent">
-+            Открыть центральную панель
-+          </el-button>
-+        </div>
-+      </transition>
-+    </div>
    </div>
  </template>
  
@@ -94,6 +107,12 @@ index 7bc641ae29fd30bd468b7e979d907d388ac4f77d..8589c507beda13d8414b13b48ef3519c
 +.content-shell {
 +  flex: 1;
 +  min-width: 0;
++  display: flex;
++  align-items: stretch;
++}
++
++.content-transition-wrapper {
++  flex: 1;
 +  display: flex;
 +  align-items: stretch;
  }
@@ -181,10 +200,10 @@ index 7bc641ae29fd30bd468b7e979d907d388ac4f77d..8589c507beda13d8414b13b48ef3519c
  }
  </style>
 diff --git a/PostListFront/posthub-ui/src/components/RightPanel.css b/PostListFront/posthub-ui/src/components/RightPanel.css
-index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7d176b280 100644
+index de749db9aa79a57a33f049c1477cbb6dba1465be..9eeaecb0f50b2cbcd2a57ccbc748799b1027976d 100644
 --- a/PostListFront/posthub-ui/src/components/RightPanel.css
 +++ b/PostListFront/posthub-ui/src/components/RightPanel.css
-@@ -1,140 +1,244 @@
+@@ -1,140 +1,259 @@
 -/* Правая панель */
 +@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap');
 +
@@ -192,8 +211,8 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
  .right-panel {
 -    flex: 0 0 320px;
 -    width: 320px;
-+    flex: 0 0 640px;
-+    width: 640px;
++    flex: 0 0 720px;
++    width: 720px;
      height: 100vh;
 -    margin-left: auto;
 +    margin: 0;
@@ -261,7 +280,7 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
  .art-row {
      display: grid;
 -    grid-template-columns: 2fr 0.8fr 1.05fr 1.05fr 1.05fr 0.9fr;
-+    grid-template-columns: 2.6fr 0.95fr 1.1fr 1.1fr 1.1fr 0.9fr;
++    grid-template-columns: 3fr 0.95fr 1.1fr 1.1fr 1.1fr 0.9fr;
      align-items: center;
      gap: 10px;
 -    padding: 10px 12px;
@@ -289,7 +308,8 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
 -.art-row + .art-row { margin-top: 6px; }
 -.art-row:hover { background: var(--el-fill-color-light); }
  
- /* Название — центр, до 3 строк */
+-/* Название — центр, до 3 строк */
++/* Название — центр, до 4 строк */
  .art-name {
 -    font-weight: 700;
 +    font-weight: 600;
@@ -300,7 +320,8 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
 +    line-height: 1.32;
      word-break: break-word;
      display: -webkit-box;
-     -webkit-line-clamp: 3;
+-    -webkit-line-clamp: 3;
++    -webkit-line-clamp: 4;
      -webkit-box-orient: vertical;
      overflow: hidden;
  }
@@ -353,6 +374,12 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
 +    background: var(--el-fill-color);
 +}
 +
++.label-button:focus-visible {
++    outline: 2px solid var(--el-color-primary);
++    outline-offset: 2px;
++    opacity: 1;
++}
++
 +.label-button:active:not(:disabled) {
 +    transform: translateY(1px);
 +}
@@ -362,17 +389,21 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
      background: var(--el-color-primary-light-9);
      color: var(--el-color-primary);
 +    border-color: var(--el-color-primary-light-7);
-+}
-+
+ }
+ 
+-.status-pill {
 +.label-button:disabled {
-+    cursor: default;
++    cursor: not-allowed;
 +    opacity: 0.35;
 +    background: var(--el-fill-color-lighter);
 +    border-color: var(--el-border-color-lighter);
 +    color: var(--el-text-color-placeholder);
- }
- 
--.status-pill {
++}
++
++.label-button:disabled:focus-visible {
++    outline: none;
++}
++
 +.status-button {
      display: inline-flex;
      align-items: center;
@@ -396,12 +427,17 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
 +
 +.status-button:hover {
 +    background: var(--el-fill-color);
+ }
+-.status-pill.done {
++
++.status-button:focus-visible {
++    outline: 2px solid var(--el-color-primary);
++    outline-offset: 2px;
 +}
 +
 +.status-button:active {
 +    transform: translateY(1px);
- }
--.status-pill.done {
++}
 +
 +.status-button.done {
      background: var(--el-color-success-light-9);
@@ -441,7 +477,7 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
      .art-row {
 -        grid-template-columns: 1.9fr 0.8fr 1fr 1fr 1fr 0.9fr;
 -        gap: 8px;
-+        grid-template-columns: 2.2fr 0.9fr 1.05fr 1.05fr 1.05fr 0.9fr;
++        grid-template-columns: 2.6fr 0.9fr 1.05fr 1.05fr 1.05fr 0.9fr;
 +        gap: 9px;
      }
 -    .label {
@@ -466,10 +502,10 @@ index de749db9aa79a57a33f049c1477cbb6dba1465be..fbcaf6e7a119d3e804637a0018a478e7
 +    cursor: not-allowed;
 +}
 diff --git a/PostListFront/posthub-ui/src/components/RightPanel.vue b/PostListFront/posthub-ui/src/components/RightPanel.vue
-index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf63899462a81 100644
+index 21dfa0449a3698fc08be40634b9b0793935b3980..f82f3a1ca74161100f5465508ce7edb935a39c66 100644
 --- a/PostListFront/posthub-ui/src/components/RightPanel.vue
 +++ b/PostListFront/posthub-ui/src/components/RightPanel.vue
-@@ -9,70 +9,184 @@ const arts = ref([
+@@ -9,70 +9,210 @@ const arts = ref([
    {
      id: 1,
      name: 'Парочка из Финалки',
@@ -502,9 +538,18 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +  isLocked.value = !isLocked.value
 +}
 +
++const nextStatus = (art) => (art.status === 'complete' ? 'in_progress' : 'complete')
++
++const statusTitle = (art) => `Сменить статус на ${statusLabel(nextStatus(art))}`
++
 +const toggleStatus = (art) => {
-+  art.status = art.status === 'complete' ? 'in_progress' : 'complete'
++  art.status = nextStatus(art)
 +}
++
++const labelTitle = (label) =>
++  isLocked.value
++    ? `Панель заблокирована — разблокируйте, чтобы изменить ${label}`
++    : `Переключить ${label}`
 +
 +const toggleFlag = (art, key) => {
 +  if (isLocked.value) return
@@ -522,6 +567,13 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 -    <div v-for="art in arts" :key="art.id" class="art-row">
 -      <!-- Название -->
 -      <div class="art-name">{{ art.name }}</div>
+-
+-      <!-- Статус -->
+-      <div class="art-status">
+-        <span class="status-pill" :class="{ done: art.status === 'complete' }">
+-          {{ statusLabel(art.status) }}
+-        </span>
+-      </div>
 +  <div class="right-panel" :class="{ locked: isLocked }">
 +    <div class="panel-header">
 +      <h2 class="panel-title">Арты</h2>
@@ -537,21 +589,21 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +      </button>
 +    </div>
  
--      <!-- Статус -->
--      <div class="art-status">
--        <span class="status-pill" :class="{ done: art.status === 'complete' }">
--          {{ statusLabel(art.status) }}
--        </span>
+-      <!-- Тип персонажа -->
+-      <div class="art-type vstack">
+-        <span class="label" :class="{ active: art.human }">human</span>
+-        <span class="label" :class="{ active: art.furry }">furry</span>
 -      </div>
 +    <div class="panel-list">
 +      <div v-for="art in arts" :key="art.id" class="art-row">
 +        <!-- Название -->
 +        <div class="art-name">{{ art.name }}</div>
  
--      <!-- Тип персонажа -->
--      <div class="art-type vstack">
--        <span class="label" :class="{ active: art.human }">human</span>
--        <span class="label" :class="{ active: art.furry }">furry</span>
+-      <!-- Контент -->
+-      <div class="art-content vstack">
+-        <span class="label" :class="{ active: art.sfw }">sfw</span>
+-        <span class="label" :class="{ active: art.nsfw }">nsfw</span>
+-        <span class="label" :class="{ active: art.crop }">crop</span>
 -      </div>
 +        <!-- Статус -->
 +        <div class="art-status">
@@ -560,17 +612,19 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            class="status-button"
 +            :class="{ done: art.status === 'complete' }"
 +            :aria-pressed="art.status === 'complete'"
++            :aria-label="statusTitle(art)"
++            :title="statusTitle(art)"
 +            @click="toggleStatus(art)"
 +          >
 +            {{ statusLabel(art.status) }}
 +          </button>
 +        </div>
  
--      <!-- Контент -->
--      <div class="art-content vstack">
--        <span class="label" :class="{ active: art.sfw }">sfw</span>
--        <span class="label" :class="{ active: art.nsfw }">nsfw</span>
--        <span class="label" :class="{ active: art.crop }">crop</span>
+-      <!-- Куда постить (план) -->
+-      <div class="art-post vstack">
+-        <span class="label" :class="{ active: art.post_targets.twi16 }">twi16</span>
+-        <span class="label" :class="{ active: art.post_targets.twi18 }">twi18</span>
+-        <span class="label" :class="{ active: art.post_targets.bsky }">bsky</span>
 -      </div>
 +        <!-- Тип персонажа -->
 +        <div class="art-type vstack">
@@ -580,6 +634,8 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            :class="{ active: art.human }"
 +            :disabled="isLocked"
 +            :aria-pressed="art.human"
++            :aria-label="labelTitle('human')"
++            :title="labelTitle('human')"
 +            @click="toggleFlag(art, 'human')"
 +          >
 +            human
@@ -590,18 +646,14 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            :class="{ active: art.furry }"
 +            :disabled="isLocked"
 +            :aria-pressed="art.furry"
++            :aria-label="labelTitle('furry')"
++            :title="labelTitle('furry')"
 +            @click="toggleFlag(art, 'furry')"
 +          >
 +            furry
 +          </button>
 +        </div>
- 
--      <!-- Куда постить (план) -->
--      <div class="art-post vstack">
--        <span class="label" :class="{ active: art.post_targets.twi16 }">twi16</span>
--        <span class="label" :class="{ active: art.post_targets.twi18 }">twi18</span>
--        <span class="label" :class="{ active: art.post_targets.bsky }">bsky</span>
--      </div>
++
 +        <!-- Контент -->
 +        <div class="art-content vstack">
 +          <button
@@ -610,6 +662,8 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            :class="{ active: art.sfw }"
 +            :disabled="isLocked"
 +            :aria-pressed="art.sfw"
++            :aria-label="labelTitle('sfw')"
++            :title="labelTitle('sfw')"
 +            @click="toggleFlag(art, 'sfw')"
 +          >
 +            sfw
@@ -620,6 +674,8 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            :class="{ active: art.nsfw }"
 +            :disabled="isLocked"
 +            :aria-pressed="art.nsfw"
++            :aria-label="labelTitle('nsfw')"
++            :title="labelTitle('nsfw')"
 +            @click="toggleFlag(art, 'nsfw')"
 +          >
 +            nsfw
@@ -630,12 +686,19 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            :class="{ active: art.crop }"
 +            :disabled="isLocked"
 +            :aria-pressed="art.crop"
++            :aria-label="labelTitle('crop')"
++            :title="labelTitle('crop')"
 +            @click="toggleFlag(art, 'crop')"
 +          >
 +            crop
 +          </button>
 +        </div>
-+
+ 
+-      <!-- Уже запощено (факт) -->
+-      <div class="art-posted vstack">
+-        <el-checkbox v-model="art.posted.twi16" size="small" />
+-        <el-checkbox v-model="art.posted.twi18" size="small" />
+-        <el-checkbox v-model="art.posted.bsky" size="small" />
 +        <!-- Куда постить (план) -->
 +        <div class="art-post vstack">
 +          <button
@@ -644,6 +707,8 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            :class="{ active: art.post_targets.twi16 }"
 +            :disabled="isLocked"
 +            :aria-pressed="art.post_targets.twi16"
++            :aria-label="labelTitle('twi16')"
++            :title="labelTitle('twi16')"
 +            @click="toggleNestedFlag(art, 'post_targets', 'twi16')"
 +          >
 +            twi16
@@ -654,6 +719,8 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            :class="{ active: art.post_targets.twi18 }"
 +            :disabled="isLocked"
 +            :aria-pressed="art.post_targets.twi18"
++            :aria-label="labelTitle('twi18')"
++            :title="labelTitle('twi18')"
 +            @click="toggleNestedFlag(art, 'post_targets', 'twi18')"
 +          >
 +            twi18
@@ -664,17 +731,14 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
 +            :class="{ active: art.post_targets.bsky }"
 +            :disabled="isLocked"
 +            :aria-pressed="art.post_targets.bsky"
++            :aria-label="labelTitle('bsky')"
++            :title="labelTitle('bsky')"
 +            @click="toggleNestedFlag(art, 'post_targets', 'bsky')"
 +          >
 +            bsky
 +          </button>
 +        </div>
- 
--      <!-- Уже запощено (факт) -->
--      <div class="art-posted vstack">
--        <el-checkbox v-model="art.posted.twi16" size="small" />
--        <el-checkbox v-model="art.posted.twi18" size="small" />
--        <el-checkbox v-model="art.posted.bsky" size="small" />
++
 +        <!-- Уже запощено (факт) -->
 +        <div class="art-posted vstack">
 +          <el-checkbox v-model="art.posted.twi16" size="small" />
@@ -685,4 +749,4 @@ index 21dfa0449a3698fc08be40634b9b0793935b3980..d2ba7fa114e71faa485b2ff63c8cf638
      </div>
    </div>
  </template>
- 
+-

@@ -5,18 +5,71 @@ from .models import Art
 @admin.register(Art)
 class ArtAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "name", "status", "how_lewd",
-        "human_type", "furry_type",
-        "post_on_bsky", "post_on_decent_twi", "post_on_lewd_twi",
-        "bsky_posted", "decent_twi_posted", "lewd_twi_posted",
+        "id",
+        "name",
+        "locked",
+        "status",
+        "is_sfw",
+        "is_nsfw",
+        "is_nsfw_plus_crop",
+        "human_type",
+        "furry_type",
+        "post_on_bsky",
+        "post_on_decent_twi",
+        "post_on_lewd_twi",
+        "bsky_posted",
+        "decent_twi_posted",
+        "lewd_twi_posted",
         "created_at",
     )
+
     list_filter = (
-        "status", "how_lewd", "human_type", "furry_type",
-        "bsky_posted", "decent_twi_posted", "lewd_twi_posted",
-        "post_on_bsky", "post_on_decent_twi", "post_on_lewd_twi",
+        "status",
+        "human_type",
+        "furry_type",
+        "is_sfw",
+        "is_nsfw",
+        "is_nsfw_plus_crop",
+        "bsky_posted",
+        "decent_twi_posted",
+        "lewd_twi_posted",
+        "post_on_bsky",
+        "post_on_decent_twi",
+        "post_on_lewd_twi",
+        "locked",
         "created_at",
     )
+
     search_fields = ("name",)
     ordering = ("-created_at",)
     date_hierarchy = "created_at"
+
+    fieldsets = (
+        ("Основное", {
+            "fields": (
+                "name",
+                "status",
+                "human_type",
+                "furry_type",
+                "price",
+                "locked",
+            )
+        }),
+        ("Контент (SFW/NSFW)", {
+            "fields": (
+                "is_sfw",
+                "is_nsfw",
+                "is_nsfw_plus_crop",
+            )
+        }),
+        ("Постинг", {
+            "fields": (
+                "post_on_bsky",
+                "post_on_decent_twi",
+                "post_on_lewd_twi",
+                "bsky_posted",
+                "decent_twi_posted",
+                "lewd_twi_posted",
+            )
+        }),
+    )

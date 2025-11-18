@@ -470,6 +470,43 @@
     color: transparent;
 }
 
+/* Область прокрутки */
+.scroll-area {
+    height: 100%;
+    width: 100%;
+}
+
+/* Ползунок (thumb) — тонкий, мягкий, как в макоси */
+.scroll-area .el-scrollbar__thumb {
+    background-color: rgba(0, 0, 0, 0.18) !important;
+    border-radius: 8px !important;
+    transition: background-color 0.25s ease, opacity 0.25s ease;
+}
+
+/* При наведении — чуть темнее */
+.scroll-area .el-scrollbar__thumb:hover {
+    background-color: rgba(0, 0, 0, 0.32) !important;
+}
+
+/* Трек — полностью прозрачный */
+.scroll-area .el-scrollbar__bar {
+    background: transparent !important;
+}
+
+/*
+  Если хочешь эффект "появляется при скролле" как в macOS:
+  Делаем всё полупрозрачным
+*/
+.scroll-area .el-scrollbar__thumb {
+    opacity: 0;
+}
+
+.scroll-area:hover .el-scrollbar__thumb,
+.scroll-area:active .el-scrollbar__thumb,
+.scroll-area:focus .el-scrollbar__thumb {
+    opacity: 1;
+}
+
 
 /* Адаптив */
 @media (max-width: 1200px) {

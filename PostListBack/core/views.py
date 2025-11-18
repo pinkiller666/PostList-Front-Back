@@ -1,19 +1,23 @@
 import json
 from django.http import JsonResponse, HttpResponseNotAllowed
 from django.views.decorators.csrf import csrf_exempt
-from .models import Art, ArtStatus, HowLewd, IsHuman, IsFurry, PostState
+
+from .models import Art, ArtStatus, IsHuman, IsFurry, PostState
 from .serializer import serialize_art
 
 
 def validate_choice(value, choices, field_name):
     valid_values = [c[0] for c in choices]
     if value not in valid_values:
-        return JsonResponse({
-            "detail": (
-                f"Недопустимое значение '{value}' для поля '{field_name}'. "
-                f"Допустимо одно из: {valid_values}"
-            )
-        }, status=400)
+        return JsonResponse(
+            {
+                "detail": (
+                    f"Недопустимое значение '{value}' для поля '{field_name}'. "
+                    f"Допустимо одно из: {valid_values}"
+                )
+            },
+            status=400,
+        )
     return None
 
 
@@ -21,9 +25,10 @@ def parse_int(value, field_name):
     try:
         return int(value)
     except (TypeError, ValueError):
-        return JsonResponse({
-            "detail": f"Поле '{field_name}' должно быть целым числом."
-        }, status=400)
+        return JsonResponse(
+            {"detail": f"Поле '{field_name}' должно быть целым числом."},
+            status=400,
+        )
 
 
 def healthcheck(request):
@@ -48,13 +53,12 @@ def arts_list(request):
 
         # choices валидация
         for fld, choices in (
-                ("status", ArtStatus.choices),
-                ("how_lewd", HowLewd.choices),
-                ("human_type", IsHuman.choices),
-                ("furry_type", IsFurry.choices),
-                ("bsky_posted", PostState.choices),
-                ("decent_twi_posted", PostState.choices),
-                ("lewd_twi_posted", PostState.choices),
+            ("status", ArtStatus.choices),
+            ("human_type", IsHuman.choices),
+            ("furry_type", IsFurry.choices),
+            ("bsky_posted", PostState.choices),
+            ("decent_twi_posted", PostState.choices),
+            ("lewd_twi_posted", PostState.choices),
         ):
             if fld in data and data[fld] is not None:
                 err = validate_choice(data[fld], choices, fld)
@@ -73,16 +77,35 @@ def arts_list(request):
         a = Art.objects.create(
             name=name,
             status=data.get("status") or Art._meta.get_field("status").default,
-            how_lewd=data.get("how_lewd") or Art._meta.get_field("how_lewd").default,
-            human_type=data.get("human_type") or Art._meta.get_field("human_type").default,
-            furry_type=data.get("furry_type") or Art._meta.get_field("furry_type").default,
+            human_type=(
+                data.get("human_type") or Art._meta.get_field("human_type").default
+            ),
+            furry_type=(
+                data.get("furry_type") or Art._meta.get_field("furry_type").default
+            ),
             price=price,
+            # sfw/nsfw-флаги
+            is_sfw=bool(data.get("is_sfw") or False),
+            is_nsfw=bool(data.get("is_nsfw") or False),
+            is_nsfw_plus_crop=bool(data.get("is_nsfw_plus_crop") or False),
+            # куда планируем постить
             post_on_bsky=bool(data.get("post_on_bsky") or False),
             post_on_decent_twi=bool(data.get("post_on_decent_twi") or False),
             post_on_lewd_twi=bool(data.get("post_on_lewd_twi") or False),
-            bsky_posted=data.get("bsky_posted") or Art._meta.get_field("bsky_posted").default,
-            decent_twi_posted=data.get("decent_twi_posted") or Art._meta.get_field("decent_twi_posted").default,
-            lewd_twi_posted=data.get("lewd_twi_posted") or Art._meta.get_field("lewd_twi_posted").default,
+            # статусы по площадкам
+            bsky_posted=(
+                data.get("bsky_posted")
+                or Art._meta.get_field("bsky_posted").default
+            ),
+            decent_twi_posted=(
+                data.get("decent_twi_posted")
+                or Art._meta.get_field("decent_twi_posted").default
+            ),
+            lewd_twi_posted=(
+                data.get("lewd_twi_posted")
+                or Art._meta.get_field("lewd_twi_posted").default
+            ),
+            # замок
             locked=bool(data.get("locked") or False),
         )
         return JsonResponse(serialize_art(a), status=201)
@@ -108,13 +131,12 @@ def art_detail(request, art_id: int):
 
         # choices валидация
         for fld, choices in (
-                ("status", ArtStatus.choices),
-                ("how_lewd", HowLewd.choices),
-                ("human_type", IsHuman.choices),
-                ("furry_type", IsFurry.choices),
-                ("bsky_posted", PostState.choices),
-                ("decent_twi_posted", PostState.choices),
-                ("lewd_twi_posted", PostState.choices),
+            ("status", ArtStatus.choices),
+            ("human_type", IsHuman.choices),
+            ("furry_type", IsFurry.choices),
+            ("bsky_posted", PostState.choices),
+            ("decent_twi_posted", PostState.choices),
+            ("lewd_twi_posted", PostState.choices),
         ):
             if fld in data and data[fld] is not None:
                 err = validate_choice(data[fld], choices, fld)
@@ -123,17 +145,27 @@ def art_detail(request, art_id: int):
 
         # частичное обновление: только присланные поля
         for field in [
-            "name", "status", "how_lewd", "human_type", "furry_type",
-            "bsky_posted", "decent_twi_posted", "lewd_twi_posted",
+            "name",
+            "status",
+            "human_type",
+            "furry_type",
+            "bsky_posted",
+            "decent_twi_posted",
+            "lewd_twi_posted",
             "locked",
+            "is_sfw",
+            "is_nsfw",
+            "is_nsfw_plus_crop",
         ]:
             if field in data and data[field] is not None:
                 setattr(a, field, data[field])
 
+        # булевы-флаги "куда планируем постить"
         for bfield in ["post_on_bsky", "post_on_decent_twi", "post_on_lewd_twi"]:
             if bfield in data and data[bfield] is not None:
                 setattr(a, bfield, bool(data[bfield]))
 
+        # price
         if "price" in data and data["price"] is not None:
             parsed = parse_int(data["price"], "price")
             if isinstance(parsed, JsonResponse):

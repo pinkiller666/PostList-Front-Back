@@ -1,69 +1,81 @@
-import { mapArtFromApi, mapArtToApi } from "./artMappers.js"
+// src/api/artApi.js
+import { mapArtToApi } from './artMappers'
 
-const BASE_URL = "http://127.0.0.1:8081/api"  // или куда у тебя сейчас смотрит API
+const API_BASE = 'http://127.0.0.1:8081'
+const ARTS_ENDPOINT = `${API_BASE}/api/arts/`
 
-// ======================
-// Загрузить список артов
-// ======================
+// Загрузка списка (если понадобится снаружи)
 export async function fetchArts() {
-    const resp = await fetch(`${BASE_URL}/arts/`)
-    if (!resp.ok) throw new Error("Failed to load arts")
+    const resp = await fetch(ARTS_ENDPOINT, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+        },
+    })
 
-    const data = await resp.json()
-    return data.items.map(mapArtFromApi)
+    if (!resp.ok) {
+        throw new Error(`Ошибка загрузки: ${resp.status} ${resp.statusText}`)
+    }
+
+    return await resp.json()
 }
 
-// ======================
-// Получить один арт
-// ======================
-export async function fetchArt(id) {
-    const resp = await fetch(`${BASE_URL}/arts/${id}/`)
-    if (!resp.ok) throw new Error("Art not found")
+// Обновление существующего арта
+export async function updateArt(art) {
+    if (!art || !art.id) {
+        throw new Error('updateArt: нет art или art.id')
+    }
 
-    return mapArtFromApi(await resp.json())
+    const payload = mapArtToApi(art)
+
+    const resp = await fetch(`${ARTS_ENDPOINT}${art.id}/`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    })
+
+    if (!resp.ok) {
+        throw new Error(`Ошибка сохранения: ${resp.status} ${resp.statusText}`)
+    }
+
+    return await resp.json()
 }
 
-// ======================
-// Создать арт
-// ======================
+// Создание (на будущее)
 export async function createArt(art) {
-    const body = mapArtToApi(art)
+    const payload = mapArtToApi(art)
 
-    const resp = await fetch(`${BASE_URL}/arts/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+    const resp = await fetch(ARTS_ENDPOINT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
     })
 
-    if (!resp.ok) throw new Error("Failed to create")
+    if (!resp.ok) {
+        throw new Error(`Ошибка создания: ${resp.status} ${resp.statusText}`)
+    }
 
-    return mapArtFromApi(await resp.json())
+    return await resp.json()
 }
 
-// ======================
-// Частичное обновление
-// ======================
-export async function updateArt(id, patch) {
-    const resp = await fetch(`${BASE_URL}/arts/${id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mapArtToApi(patch)),
-    })
-
-    if (!resp.ok) throw new Error("Failed to update art")
-
-    return mapArtFromApi(await resp.json())
-}
-
-// ======================
-// Удаление
-// ======================
+// Удаление (на будущее)
 export async function deleteArt(id) {
-    const resp = await fetch(`${BASE_URL}/arts/${id}/`, {
-        method: "DELETE",
+    const resp = await fetch(`${ARTS_ENDPOINT}${id}/`, {
+        method: 'DELETE',
+        headers: {
+            'Accept': 'application/json',
+        },
     })
 
-    if (!resp.ok) throw new Error("Failed to delete art")
+    if (!resp.ok) {
+        throw new Error(`Ошибка удаления: ${resp.status} ${resp.statusText}`)
+    }
 
-    return true
+    return await resp.json()
 }

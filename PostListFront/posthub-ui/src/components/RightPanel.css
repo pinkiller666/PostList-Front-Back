@@ -61,6 +61,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-m);  /* 12px */
+    padding: 6px 12px; /* или 16px — подбирай */
 }
 
 /* Карточка */
@@ -81,6 +82,12 @@
 
 /* без эффекта наведения */
 .art-row:hover {
+    background: var(--el-bg-color);
+    box-shadow: none;
+    border-color: var(--el-border-color-lighter);
+}
+
+.art-row:not(.art-row--all-closed):hover {
     background: var(--el-bg-color);
     box-shadow: none;
     border-color: var(--el-border-color-lighter);
@@ -116,10 +123,9 @@
     column-gap: 0.625rem; /* 10px */
 }
 
-/* Название + замок + иконки */
+/* Название + иконки */
 .art-name-wrap {
     position: relative;
-    padding-top: 0rem; /* место под замочек сверху */
     text-align: center;
 }
 
@@ -133,14 +139,12 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-align: center;
+    cursor: pointer;
 }
 
-.art-name-wrap .floating-lock {
-    position: absolute;
-    top: -1rem;
-    left: 50%;
-    transform: translate(-50%, -60%);
-    z-index: 1;
+/* Лёгкий ховер, чтобы было понятно, что по названию можно кликнуть */
+.art-name:hover {
+    color: var(--el-color-primary-dark-2);
 }
 
 /* Вертикальный стек внутри колонок */
@@ -270,66 +274,6 @@
     margin-right: 0;
 }
 
-/* Заморозка: блокируем клики по содержимому, замок живой */
-.art-row.frozen .label-button,
-.art-row.frozen .status-button,
-.art-row.frozen .el-checkbox {
-    pointer-events: none;
-}
-
-.art-row.frozen .lock-icon-btn {
-    pointer-events: auto;
-}
-
-/* Кнопка-замок */
-.lock-icon-btn {
-    width: 1.75rem;                 /* 28px */
-    height: 1.75rem;
-    min-width: 1.75rem;
-    border-radius: 999px;
-    border: 1px solid var(--el-border-color-lighter);
-    background: transparent;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--el-text-color-disabled);
-    transition:
-            background 0.18s ease,
-            border-color 0.18s ease,
-            color 0.18s ease,
-            box-shadow 0.18s ease;
-}
-
-.lock-icon-btn .el-icon {
-    font-size: var(--icon-font-size); /* 16px */
-}
-
-.lock-icon-btn:hover {
-    background: var(--el-fill-color-lighter) !important;
-    border-color: var(--el-border-color) !important;
-    color: var(--el-text-color-regular) !important;
-}
-
-.lock-icon-btn.is-locked {
-    background: var(--el-fill-color-lighter);
-    border-color: var(--el-border-color);
-    color: var(--el-text-color-regular);
-    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
-}
-
-.lock-icon-btn.is-unlocked {
-    background: transparent;
-    border-color: var(--el-border-color-lighter);
-    color: var(--el-text-color-disabled);
-}
-
-.lock-icon-btn:focus,
-.lock-icon-btn:focus-visible {
-    outline: none !important;
-    box-shadow: none !important;
-}
-
 .art-posted .el-checkbox__input.is-focus .el-checkbox__inner {
     box-shadow: none;
 }
@@ -342,22 +286,6 @@
     outline: none !important;
     box-shadow: none !important;
     border-color: transparent !important;
-}
-
-.lock-icon-btn:focus,
-.lock-icon-btn:focus-visible,
-.lock-icon-btn.is-focus,
-.lock-icon-btn .is-focus,
-.lock-icon-btn .el-button:focus,
-.lock-icon-btn .el-button:focus-visible,
-.lock-icon-btn .el-button.is-focus {
-    outline: none !important;
-    box-shadow: none !important;
-}
-
-.lock-icon-btn .el-button__inner:focus {
-    outline: none !important;
-    box-shadow: none !important;
 }
 
 .right-panel button:focus,
@@ -395,11 +323,11 @@
     align-items: center;
 }
 
-/* Показываем иконки только при наведении на строку */
-.art-row:hover .art-name-wrap .art-name-actions {
-    opacity: 1;
-    pointer-events: auto;
-}
+/*!* Показываем иконки только при наведении на строку *!*/
+/*.art-row:hover .art-name-wrap .art-name-actions {*/
+/*    opacity: 1;*/
+/*    pointer-events: auto;*/
+/*}*/
 
 .art-name-action-btn {
     padding: 0;
@@ -508,7 +436,261 @@
 }
 
 
-/* Адаптив */
+.art-row--done {
+    background: var(--el-color-success-light-9);
+    border-color: var(--el-color-success-light-5);
+}
+
+.art-row--finished {
+    border-color: var(--el-color-success);
+    box-shadow: 0 0 0 1px var(--el-color-success-light-5);
+}
+
+.art-row--completed {
+    border-color: var(--el-color-success);
+    box-shadow:
+            0 0 0 1px var(--el-color-success-light-5),
+            0 0 10px rgba(103, 194, 58, 0.35); /* мягкое свечение */
+}
+
+.art-row--all-closed {
+
+    box-shadow:
+            0 0 0 0px rgba(0, 0, 0, 0.08),
+            0 0 2px var(--el-color-success);
+}
+
+.art-row--all-closed:hover {
+
+    box-shadow:
+            0 0 0 2px rgba(0, 0, 0, 0.08),
+            0 0 3px var(--el-color-success);
+}
+
+
+
+
+/* Колонка статуса и кнопка "on disk" */
+.art-status {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.art-row-header,
+.art-row-body {
+    grid-template-columns:
+        auto          /* название растягивается */
+        7rem          /* статус */
+        6rem          /* human/furry */
+        6rem          /* sfw/nsfw/crop */
+        6rem          /* twi16/twi18/bsky */
+        4.5rem;       /* posted */
+}
+
+
+/* Кнопка "on disk" под статусом */
+.on-disk-button {
+    position: absolute;
+    bottom: -0.35rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 1px dashed var(--el-border-color);
+    background: var(--el-fill-color);
+    font-size: var(--font-size-xs);
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease;
+}
+
+.on-disk-button.active {
+    background: var(--el-color-primary-light-9);
+    border-color: var(--el-color-primary-light-5);
+    color: var(--el-color-primary);
+
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
+    border-color: var(--el-color-success-light-5);
+}
+
+/* Скрытые (но занимающие место) чекбоксы "выложено" */
+.art-posted .posted-checkbox--hidden {
+    visibility: hidden;
+}
+
+.status-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+/* Колонка статуса и кнопка "on disk" */
+.art-status {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Кнопка "on disk" под статусом */
+.on-disk-button {
+    position: absolute;
+    bottom: -2.2rem;
+    left: 50%;
+    transform: translateX(-50%) scale(110%);
+    margin-left: 0px;
+
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+
+    border: 1px solid var(--el-border-color);
+    background: var(--el-fill-color);
+
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+
+    cursor: pointer;
+
+    display: flex;                /* выравнивание */
+    align-items: center;          /* по вертикали */
+    justify-content: center;      /* по горизонтали */
+    white-space: nowrap;          /* текст в одну строку */
+
+    font-size: var(--font-size-s);      /* размер текста */
+    font-weight: 500;                   /* жирность */
+    text-transform: lowercase;          /* всё строчными */
+    letter-spacing: 0.2px;              /* межбуквенное */
+
+    /* плюс цвет: */
+    color: var(--el-text-color-regular);
+
+    opacity: 0.55;
+    border: 1px solid transparent;
+
+    transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease;
+}
+
+
+.on-disk-button.active {
+    background: var(--el-color-primary-light-9);
+    border-color: var(--el-color-primary-light-5);
+    color: var(--el-color-primary);
+
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
+    border-color: var(--el-color-success-light-5);
+}
+
+.art-posted-placeholder {
+    font-size: var(--font-size-xs);
+    color: var(--el-text-color-secondary);
+    opacity: 0.8;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+}
+
+.art-row-header {
+    display: grid;
+    grid-template-columns: 1fr 4rem; /* широкая зона + узкая "posted" */
+    align-items: center;
+    column-gap: 0.625rem;
+}
+
+.header-archive {
+    position: relative;
+    height: 0.9rem; /* аккуратная полоска сверху карточки */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(var(--el-color-success));
+}
+
+.header-archive--empty {
+    cursor: default;
+}
+
+
+.header-archive-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 0.9rem; /* если там el-icon — это его размер */
+    color: var(--el-text-color-secondary);
+
+    opacity: 0.6;
+    transform: translateY(0);
+
+    transition:
+            transform 0.16s ease,
+            color 0.16s ease,
+            opacity 0.16s ease;
+}
+
+/* Кнопка активна (есть смысл кликать) */
+.header-archive {
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(var(--el-color-success));
+}
+
+/* HOVER: иконка чуть всплывает и ярче, тень проявляется */
+.header-archive:hover .header-archive-arrow {
+    opacity: 1;
+    color: var(--el-color-primary);
+    transform: translateY(-1px);
+}
+
+.header-archive:hover {
+    opacity: 1;
+}
+
+/* ACTIVE: ощущение лёгкого нажатия */
+.header-archive:active .header-archive-arrow {
+    transform: translateY(0); /* вернулась чуть вниз */
+    opacity: 0.85;
+}
+
+.header-archive:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
+}
+
+.finish-icon {
+    position: absolute ;
+    top: -1.4rem;      /* чуть выше статус-кнопки */
+    right: 0;           /* или left: 0 — куда тебе больше нравится */
+    width: 1rem;        /* 16px */
+    height: 1rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--el-color-success);
+    opacity: 1;      /* мягкий, не кричащий */
+    font-size: 1.4rem;
+
+    pointer-events: none; /* НЕ влияет на клики */
+    left: 50%;
+    transform: translateX(-50%);
+
+    transition:
+            opacity 0.05s ease,
+            transform 0.05s ease;
+}
+
+/*!* Адаптив *!
 @media (max-width: 1200px) {
     .art-row-header,
     .art-row-body {
@@ -523,9 +705,9 @@
         height: auto;
         border-right: none;
         border-bottom: 1px solid var(--el-border-color);
-        padding: 1.25rem 1rem; /* 20px 16px */
+        padding: 1.25rem 1rem; !* 20px 16px *!
     }
-}
+}*/
 
 /* VISUAL LATER:
                     когда замочек закрыт, кнопки удаления и редактирования не появляются

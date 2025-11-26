@@ -1,0 +1,527 @@
+--- RightPanel.css
++++ RightPanel.css
+@@ -119,7 +119,6 @@
+ /* Название + замок + иконки */
+ .art-name-wrap {
+     position: relative;
+-    padding-top: 0rem; /* место под замочек сверху */
+     text-align: center;
+ }
+ 
+@@ -133,15 +132,20 @@
+     -webkit-line-clamp: 4;
+     -webkit-box-orient: vertical;
+     overflow: hidden;
+-    text-align: center;
+-}
+-
+-.art-name-wrap .floating-lock {
+-    position: absolute;
+-    top: -1rem;
+-    left: 50%;
+-    transform: translate(-50%, -60%);
+-    z-index: 1;
++    text-align: center;
++    cursor: pointer;
++}
++
++.art-name:hover {
++    color: var(--el-color-primary);
+ }
+ 
+ /* Вертикальный стек внутри колонок */
+ .vstack {
+@@ -207,6 +211,38 @@
+ .status-button.done {
+     background: var(--el-color-success-light-9);
+     color: var(--el-color-success);
+     border-color: var(--el-color-success-light-5);
+ }
++
++.art-status {
++    position: relative;
++    display: flex;
++    align-items: center;
++    justify-content: center;
++}
++
++/* Вторичная кнопка под complete */
++.on-disk-button {
++    position: absolute;
++    bottom: -0.8rem;
++    left: 50%;
++    transform: translateX(-50%);
++    padding: 0.25rem 0.9rem;         /* ~70% от complete */
++    border-radius: 999px;
++    font-size: 0.75rem;
++    font-weight: 600;
++    text-transform: lowercase;
++    background: var(--el-fill-color-lighter);
++    border: 1px solid var(--el-border-color);
++    color: var(--el-text-color-secondary);
++    cursor: pointer;
++    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
++}
++
++.on-disk-button.active {
++    background: var(--el-color-primary-light-9);
++    border-color: var(--el-color-primary-light-5);
++    color: var(--el-color-primary);
++}
+@@ -253,41 +289,6 @@
+ .art-posted .el-checkbox__input {
+     margin-right: 0;
+ }
+-
+-/* Заморозка: блокируем клики по содержимому, замок живой */
+-.art-row.frozen .label-button,
+-.art-row.frozen .status-button,
+-.art-row.frozen .el-checkbox {
+-    pointer-events: none;
+-}
+-
+-.art-row.frozen .lock-icon-btn {
+-    pointer-events: auto;
+-}
+-
+-/* Кнопка-замок */
+-.lock-icon-btn {
+-    width: 1.75rem;                 /* 28px */
+-    height: 1.75rem;
+-    min-width: 1.75rem;
+-    border-radius: 999px;
+-    border: 1px solid var(--el-border-color-lighter);
+-    background: transparent;
+-    padding: 0;
+-    display: inline-flex;
+-    align-items: center;
+-    justify-content: center;
+-    color: var(--el-text-color-disabled);
+-    transition:
+-            background 0.18s ease,
+-            border-color 0.18s ease,
+-            color 0.18s ease,
+-            box-shadow 0.18s ease;
+-}
+-
+-.lock-icon-btn .el-icon {
+-    font-size: var(--icon-font-size); /* 16px */
+-}
+@@ -331,28 +332,6 @@
+ .art-posted .el-checkbox__input.is-focus .el-checkbox__inner {
+     box-shadow: none;
+ }
+-
+-/* Глушим фокусы Element Plus */
+-.label-button:focus,
+-.label-button:focus-visible,
+-.status-button:focus,
+-.status-button:focus-visible {
+-    outline: none !important;
+-    box-shadow: none !important;
+-    border-color: transparent !important;
+-}
+-
+-.lock-icon-btn:focus,
+-.lock-icon-btn:focus-visible,
+-.lock-icon-btn.is-focus,
+-.lock-icon-btn .is-focus,
+-.lock-icon-btn .el-button:focus,
+-.lock-icon-btn .el-button:focus-visible,
+-.lock-icon-btn .el-button.is-focus {
+-    outline: none !important;
+-    box-shadow: none !important;
+-}
+-
+-.lock-icon-btn .el-button__inner:focus {
+-    outline: none !important;
+-    box-shadow: none !important;
+-}
++
++/* Глушим фокусы Element Plus */
++.label-button:focus,
++.label-button:focus-visible,
++.status-button:focus,
++.status-button:focus-visible {
++    outline: none !important;
++    box-shadow: none !important;
++    border-color: transparent !important;
++}
+@@ -371,6 +350,23 @@
+ .right-panel button::-moz-focus-inner {
+     border: 0;
+ }
++
++.art-posted-placeholder {
++    height: var(--art-row-item-height);  /* как чекбокс */
++    display: flex;
++    align-items: center;
++    justify-content: center;
++    font-size: var(--font-size-xs);
++    color: var(--el-text-color-secondary);
++    opacity: 0.8;
++    padding: 0;
++    margin: 0;
++}
++
++.posted-checkbox--hidden {
++    visibility: hidden;
++}
++
+ 
+ /* Контейнер иконок редактирования */
+ .art-name-actions {
+--- RightPanel.vue
++++ RightPanel.vue
+@@ -1,6 +1,6 @@
+ <script setup>
+ import { ref, nextTick, onMounted } from 'vue'
+-import { Lock, Unlock, Edit, Delete } from '@element-plus/icons-vue'
++import { Delete } from '@element-plus/icons-vue'
+ import './RightPanel.css'
+ import { mapArtFromApi } from '../api/artMappers'
+ import { updateArt } from '../api/artApi'
+@@ -31,7 +31,13 @@
+     }
+ 
+     const data = await resp.json()
+     const items = Array.isArray(data.items) ? data.items : []
+ 
+-    arts.value = items.map(mapArtFromApi)
++    arts.value = items.map(function (item) {
++      const art = mapArtFromApi(item)
++      if (typeof art.onDisk !== 'boolean') {
++        art.onDisk = false
++      }
++      return art
++    })
+   } catch (err) {
+     console.error('Ошибка загрузки артов:', err)
+     loadError.value = err instanceof Error ? err.message : String(err)
+@@ -63,42 +69,103 @@
+     // TODO LATER: показать тост, откатить изменения, подсветить строку и т.п.
+   }
+ }
+ 
+-const toggleRowLock = (art) => {
+-  art.locked = !art.locked
+-  saveArt(art)
+-}
+-
+-// было тернарным адом — теперь обычный if/else
+ const nextStatus = (art) => {
+   if (art.status === 'complete') {
+     return 'in_progress'
+   }
+   return 'complete'
+ }
+@@ -106,25 +173,88 @@
+ 
+ const statusTitle = (art) => `Сменить статус на ${statusLabel(nextStatus(art))}`
+ 
+-const toggleStatus = (art) => {
+-  if (art.locked) return
+-  art.status = nextStatus(art)
+-  saveArt(art)
+-}
+-
+-const toggleFlag = (art, key) => {
+-  if (art.locked) return
+-  art[key] = !art[key]
+-  saveArt(art)
+-}
+-
+-const toggleNestedFlag = (art, scope, key) => {
+-  if (art.locked) return
+-  art[scope][key] = !art[scope][key]
+-  saveArt(art)
+-}
++function isAllClosed(art) {
++  const targets = art.post_targets || {}
++  const entries = Object.entries(targets)
++  const selected = entries.filter(function (pair) {
++    return pair[1]
++  })
++
++  if (selected.length === 0) {
++    return false
++  }
++
++  const allPosted = selected.every(function (pair) {
++    const key = pair[0]
++    if (!art.posted) {
++      return false
++    }
++    return !!art.posted[key]
++  })
++
++  return art.status === 'complete' && art.onDisk && allPosted
++}
++
++function reportAllClosed(art) {
++  if (isAllClosed(art)) {
++    console.log(`Арт #${art.id}: все закрыто`)
++  }
++}
++
++function toggleStatus(art) {
++  art.status = nextStatus(art)
++  saveArt(art)
++  reportAllClosed(art)
++}
++
++function toggleFlag(art, key) {
++  art[key] = !art[key]
++  saveArt(art)
++}
++
++function toggleNestedFlag(art, scope, key) {
++  if (!art[scope]) {
++    art[scope] = {}
++  }
++  art[scope][key] = !art[scope][key]
++  saveArt(art)
++  if (scope === 'post_targets') {
++    reportAllClosed(art)
++  }
++}
++
++function toggleOnDisk(art) {
++  if (typeof art.onDisk !== 'boolean') {
++    art.onDisk = false
++  }
++  art.onDisk = !art.onDisk
++  reportAllClosed(art)
++}
++
++function handlePostedChange(art) {
++  saveArt(art)
++  reportAllClosed(art)
++}
++
++function hasAnyPostTarget(art) {
++  const targets = art.post_targets || {}
++  const keys = Object.keys(targets)
++  for (var i = 0; i < keys.length; i += 1) {
++    if (targets[keys[i]]) {
++      return true
++    }
++  }
++  return false
++}
+ 
+ /* --- Редактирование названия --- */
+ 
+ const editingNameId = ref(null)
+ const editNameValue = ref('')
+ const editNameInput = ref(null)
+ 
+ const startEditName = (art) => {
+-  if (art.locked) return
+   editingNameId.value = art.id
+   editNameValue.value = art.name
+@@ -169,23 +299,23 @@
+     }
+   }
+   editingNameId.value = null
+ }
+ </script>
+ 
+ <template>
+@@ -196,17 +326,16 @@
+       <div class="panel-list">
+         <div
+             v-for="art in arts"
+             :key="art.id"
+-            class="art-row"
+-            :class="{ frozen: art.locked }"
++            class="art-row"
+         >
+-          <!-- ВЕРХНЯЯ ПОЛОСА: только заголовок "выложено" -->
++          <!-- ВЕРХНЯЯ ПОЛОСА: только заголовок "posted" -->
+           <div class="art-row-header">
+-            <div class="header-lock"></div>
+             <div></div>
+             <div></div>
+             <div></div>
+             <div></div>
+             <div class="header-posted">
+-              <span class="col-head">выложено</span>
++              <span class="col-head">posted</span>
+             </div>
+           </div>
+ 
+           <!-- ОСНОВНАЯ СЕТКА КАРТОЧКИ -->
+           <div class="art-row-body">
+-            <!-- Название + плавающий замок + иконки редактирования -->
+-            <div class="art-name-wrap">
+-              <el-button
+-                  circle
+-                  size="small"
+-                  class="lock-icon-btn floating-lock"
+-                  :class="{
+-                  'is-locked': art.locked,
+-                  'is-unlocked': !art.locked
+-                }"
+-                  :title="art.locked ? 'Разблокировать' : 'Заблокировать'"
+-                  @click.stop="toggleRowLock(art)"
+-              >
+-                <el-icon>
+-                  <Lock v-if="art.locked" />
+-                  <Unlock v-else />
+-                </el-icon>
+-              </el-button>
+-
+-              <!-- Кнопки редактировать / удалить, появляются при hover -->
+-              <div class="art-name-actions">
+-                <el-button
+-                    class="art-name-action-btn"
+-                    text
+-                    :icon="Edit"
+-                    size="small"
+-                    @click.stop="startEditName(art)"
+-                    title="Редактировать название"
+-                />
+-                <el-button
+-                    class="art-name-action-btn"
+-                    text
+-                    :icon="Delete"
+-                    size="small"
+-                    @click.stop
+-                    title="Удалить арт"
+-                />
+-              </div>
+-
+-              <!-- Режим редактирования -->
+-              <div
+-                  v-if="editingNameId === art.id"
+-                  class="art-name-edit"
+-              >
+-                <el-input
+-                    ref="editNameInput"
+-                    v-model="editNameValue"
+-                    size="small"
+-                    @blur="finishEditName(art)"
+-                    @keyup.enter="finishEditName(art)"
+-                />
+-              </div>
+-
+-              <!-- Обычный режим отображения -->
+-              <div v-else class="art-name">
+-                {{ art.name }}
+-              </div>
+-            </div>
++            <!-- Название + иконки редактирования -->
++            <div class="art-name-wrap">
++              <!-- Кнопка удаления, появляется при hover -->
++              <div class="art-name-actions">
++                <el-button
++                    class="art-name-action-btn"
++                    text
++                    :icon="Delete"
++                    size="small"
++                    @click.stop
++                    title="Удалить арт"
++                />
++              </div>
++
++              <!-- Режим редактирования -->
++              <div
++                  v-if="editingNameId === art.id"
++                  class="art-name-edit"
++              >
++                <el-input
++                    ref="editNameInput"
++                    v-model="editNameValue"
++                    size="small"
++                    @blur="finishEditName(art)"
++                    @keyup.enter="finishEditName(art)"
++                />
++              </div>
++
++              <!-- Обычный режим отображения -->
++              <div
++                  v-else
++                  class="art-name"
++                  tabindex="0"
++                  @click="startEditName(art)"
++                  @keydown.enter.prevent="startEditName(art)"
++              >
++                {{ art.name }}
++              </div>
++            </div>
+ 
+             <!-- Статус -->
+             <div class="art-status col-sep">
+               <button
+                   type="button"
+@@ -216,7 +346,18 @@
+                   @click="toggleStatus(art)"
+               >
+                 {{ statusLabel(art.status) }}
+               </button>
++              <button
++                  v-if="art.status === 'complete'"
++                  type="button"
++                  class="on-disk-button"
++                  :class="{ active: art.onDisk }"
++                  :aria-pressed="art.onDisk"
++                  @click="toggleOnDisk(art)"
++              >
++                {{ art.onDisk ? 'on disk' : 'all posted' }}
++              </button>
+             </div>
+ 
+             <!-- Тип персонажа -->
+             <div class="art-type vstack col-sep">
+@@ -297,19 +438,40 @@
+               </button>
+             </div>
+ 
+             <!-- Уже выложено (факт) -->
+             <div class="art-posted vstack col-sep">
+-              <el-checkbox
+-                  v-model="art.posted.twi16"
+-                  size="small"
+-                  @change="saveArt(art)"
+-              />
+-              <el-checkbox
+-                  v-model="art.posted.twi18"
+-                  size="small"
+-                  @change="saveArt(art)"
+-              />
+-              <el-checkbox
+-                  v-model="art.posted.bsky"
+-                  size="small"
+-                  @change="saveArt(art)"
+-              />
++              <template v-if="hasAnyPostTarget(art)">
++                <el-checkbox
++                    class="posted-checkbox"
++                    :class="{ 'posted-checkbox--hidden': !art.post_targets.twi16 }"
++                    v-model="art.posted.twi16"
++                    size="small"
++                    @change="handlePostedChange(art)"
++                />
++                <el-checkbox
++                    class="posted-checkbox"
++                    :class="{ 'posted-checkbox--hidden': !art.post_targets.twi18 }"
++                    v-model="art.posted.twi18"
++                    size="small"
++                    @change="handlePostedChange(art)"
++                />
++                <el-checkbox
++                    class="posted-checkbox"
++                    :class="{ 'posted-checkbox--hidden': !art.post_targets.bsky }"
++                    v-model="art.posted.bsky"
++                    size="small"
++                    @change="handlePostedChange(art)"
++                />
++              </template>
++              <div v-else class="art-posted-placeholder">
++                choose where to post
++              </div>
+             </div>
+           </div>
+         </div>
+       </div>

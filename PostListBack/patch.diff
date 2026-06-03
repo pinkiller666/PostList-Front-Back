@@ -1,0 +1,1373 @@
+diff --git a/PostListBack/core/admin.py b/PostListBack/core/admin.py
+index 4cbde73223f52781eb9e51c560bc4d906dee11c8..2db75d4b3aa1296988b832bb5c4efe46b1cb7b1f 100644
+--- a/PostListBack/core/admin.py
++++ b/PostListBack/core/admin.py
+@@ -1,75 +1,85 @@
+ from django.contrib import admin
+ from .models import Art
+ 
+ 
+ @admin.register(Art)
+ class ArtAdmin(admin.ModelAdmin):
+     list_display = (
+         "id",
+         "name",
+         "locked",
+         "status",
++        "order_month",
++        "price",
++        "payment_status",
++        "payout_status",
+         "is_sfw",
+         "is_nsfw",
+         "is_nsfw_plus_crop",
+         "human_type",
+         "furry_type",
+         "post_on_bsky",
+         "post_on_decent_twi",
+         "post_on_lewd_twi",
+         "bsky_posted",
+         "decent_twi_posted",
+         "lewd_twi_posted",
+         "created_at",
+     )
+ 
+     list_filter = (
+         "status",
++        "order_month",
++        "payment_status",
++        "payout_status",
+         "human_type",
+         "furry_type",
+         "is_sfw",
+         "is_nsfw",
+         "is_nsfw_plus_crop",
+         "bsky_posted",
+         "decent_twi_posted",
+         "lewd_twi_posted",
+         "post_on_bsky",
+         "post_on_decent_twi",
+         "post_on_lewd_twi",
+         "locked",
+         "created_at",
+     )
+ 
+     search_fields = ("name",)
+-    ordering = ("-created_at",)
++    ordering = ("-order_month", "-created_at")
+     date_hierarchy = "created_at"
+ 
+     fieldsets = (
+         ("Основное", {
+             "fields": (
+                 "name",
+                 "status",
+                 "human_type",
+                 "furry_type",
++                "order_month",
+                 "price",
++                "payment_status",
++                "payout_status",
+                 "locked",
+             )
+         }),
+         ("Контент (SFW/NSFW)", {
+             "fields": (
+                 "is_sfw",
+                 "is_nsfw",
+                 "is_nsfw_plus_crop",
+             )
+         }),
+         ("Постинг", {
+             "fields": (
+                 "post_on_bsky",
+                 "post_on_decent_twi",
+                 "post_on_lewd_twi",
+                 "bsky_posted",
+                 "decent_twi_posted",
+                 "lewd_twi_posted",
+             )
+         }),
+     )
+diff --git a/PostListBack/core/management/commands/seed_demo_arts.py b/PostListBack/core/management/commands/seed_demo_arts.py
+index 20f237a6b79eb60e52dfca84cf5a4cafa31c380f..4a8c8fcc7ca5633c9cd17b382d80eb6e8e907c7e 100644
+--- a/PostListBack/core/management/commands/seed_demo_arts.py
++++ b/PostListBack/core/management/commands/seed_demo_arts.py
+@@ -1,108 +1,122 @@
+ import random
+ from django.core.management.base import BaseCommand
+-from core.models import Art, ArtStatus, IsHuman, IsFurry, PostState
++from core.models import (
++    Art,
++    ArtStatus,
++    IsHuman,
++    IsFurry,
++    PaymentStatus,
++    PayoutStatus,
++    PostState,
++)
+ 
+ 
+ DEMO_PREFIX = "demo_"
+ 
+ 
+ class Command(BaseCommand):
+     help = "Создаёт пачку демо-артов с префиксом 'demo_' в имени."
+ 
+     def add_arguments(self, parser):
+         parser.add_argument(
+             "--count",
+             type=int,
+             default=5,
+             help="Сколько демо-артов создать (по умолчанию 5)",
+         )
+ 
+     def handle(self, *args, **options):
+         count = options["count"]
+         created = 0
+ 
+         for idx in range(count):
+             # Немного разнообразных тайтлов
+             name = f"{DEMO_PREFIX}арт_{idx+1}"
+ 
+             # Статус
+             status = random.choice([
+                 ArtStatus.ONLY_PLANNED,
+                 ArtStatus.IN_PROGRESS,
+                 ArtStatus.DONE,
+                 ArtStatus.CANCELLED,
+                 ArtStatus.WAITING_TO_START,
+             ])
+ 
+             # Человек / фурри
+             human_type = random.choice([IsHuman.YES, IsHuman.NO])
+             furry_type = random.choice([IsFurry.YES, IsFurry.NO])
+ 
+-            # Цена (временно рандом)
++            # Месяц/деньги (временно рандом)
++            order_month = random.choice(["2026-03", "2026-04", "2026-05"])
+             price = random.choice([0, 50, 100, 150, 200, 300])
++            payment_status = random.choice(PaymentStatus.values)
++            payout_status = random.choice(PayoutStatus.values)
+ 
+             # Сценарий по SFW/NSFW:
+             # 0: только SFW
+             # 1: только NSFW
+             # 2: обе версии
+             # 3: NSFW + только crop
+             mode = random.choice([0, 1, 2, 3])
+ 
+             is_sfw = False
+             is_nsfw = False
+             is_nsfw_plus_crop = False
+ 
+             if mode == 0:
+                 # только SFW
+                 is_sfw = True
+             elif mode == 1:
+                 # только NSFW
+                 is_nsfw = True
+             elif mode == 2:
+                 # обе полноценные версии
+                 is_sfw = True
+                 is_nsfw = True
+             elif mode == 3:
+                 # NSFW + crop вместо SFW
+                 is_nsfw = True
+                 is_nsfw_plus_crop = True
+ 
+             # Куда планируем постить
+             post_on_bsky = random.choice([True, False])
+             post_on_decent_twi = random.choice([True, False])
+             post_on_lewd_twi = random.choice([True, False])
+ 
+             # Статусы по площадкам
+             post_state_choices = [
+                 PostState.NOT_POSTED,
+                 PostState.SCHEDULED,
+                 PostState.POSTED,
+             ]
+ 
+             bsky_posted = random.choice(post_state_choices)
+             decent_twi_posted = random.choice(post_state_choices)
+             lewd_twi_posted = random.choice(post_state_choices)
+ 
+             Art.objects.create(
+                 name=name,
+                 status=status,
+                 locked=random.choice([True, False]),
++                order_month=order_month,
+                 price=price,
++                payment_status=payment_status,
++                payout_status=payout_status,
+                 human_type=human_type,
+                 furry_type=furry_type,
+                 is_sfw=is_sfw,
+                 is_nsfw=is_nsfw,
+                 is_nsfw_plus_crop=is_nsfw_plus_crop,
+                 post_on_bsky=post_on_bsky,
+                 post_on_decent_twi=post_on_decent_twi,
+                 post_on_lewd_twi=post_on_lewd_twi,
+                 bsky_posted=bsky_posted,
+                 decent_twi_posted=decent_twi_posted,
+                 lewd_twi_posted=lewd_twi_posted,
+             )
+ 
+             created += 1
+ 
+         self.stdout.write(
+             self.style.SUCCESS(f"Создано демо-артов: {created}")
+         )
+diff --git a/PostListBack/core/migrations/0002_order_month_payment_payout.py b/PostListBack/core/migrations/0002_order_month_payment_payout.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..8a27f4d3fded1971d9b9c39a967dfcac379d3307
+--- /dev/null
++++ b/PostListBack/core/migrations/0002_order_month_payment_payout.py
+@@ -0,0 +1,63 @@
++# Generated manually for order month and payment tracking.
++
++import core.models
++from django.db import migrations, models
++import django.core.validators
++
++
++class Migration(migrations.Migration):
++
++    dependencies = [
++        ("core", "0001_initial"),
++    ]
++
++    operations = [
++        migrations.AddField(
++            model_name="art",
++            name="order_month",
++            field=models.CharField(
++                db_index=True,
++                default=core.models.current_order_month,
++                help_text="Месяц заказа в формате YYYY-MM.",
++                max_length=7,
++                validators=[
++                    django.core.validators.RegexValidator(
++                        message="Месяц заказа должен быть в формате YYYY-MM.",
++                        regex="^\\d{4}-(0[1-9]|1[0-2])$",
++                    )
++                ],
++            ),
++        ),
++        migrations.AddField(
++            model_name="art",
++            name="payment_status",
++            field=models.CharField(
++                choices=[
++                    ("unpaid", "Не оплачена"),
++                    ("partially_paid", "Частично оплачена"),
++                    ("fully_paid", "Фул оплачена"),
++                    ("half_before_sketch", "Половина до скетча"),
++                ],
++                db_index=True,
++                default="unpaid",
++                max_length=32,
++            ),
++        ),
++        migrations.AddField(
++            model_name="art",
++            name="payout_status",
++            field=models.CharField(
++                choices=[
++                    ("not_withdrawn", "Не выведено"),
++                    ("withdrawn", "Выведено"),
++                ],
++                db_index=True,
++                default="not_withdrawn",
++                max_length=32,
++            ),
++        ),
++        migrations.AlterModelOptions(
++            name="art",
++            options={"ordering": ("-order_month", "-created_at")},
++        ),
++    ]
+diff --git a/PostListBack/core/migrations/0003_add_deleted_art_status.py b/PostListBack/core/migrations/0003_add_deleted_art_status.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..d1a782f2a49fc65025d7aaee404c1d7fb9b366d3
+--- /dev/null
++++ b/PostListBack/core/migrations/0003_add_deleted_art_status.py
+@@ -0,0 +1,30 @@
++# Generated manually for soft delete status.
++
++from django.db import migrations, models
++
++
++class Migration(migrations.Migration):
++
++    dependencies = [
++        ("core", "0002_order_month_payment_payout"),
++    ]
++
++    operations = [
++        migrations.AlterField(
++            model_name="art",
++            name="status",
++            field=models.CharField(
++                choices=[
++                    ("done", "Готово"),
++                    ("in_progress", "В процессе"),
++                    ("cancelled", "Отменено"),
++                    ("only_planned", "Только запланировано"),
++                    ("waiting_to_start", "Ожидает начала"),
++                    ("deleted", "Удалено"),
++                ],
++                db_index=True,
++                default="only_planned",
++                max_length=32,
++            ),
++        ),
++    ]
+diff --git a/PostListBack/core/models.py b/PostListBack/core/models.py
+index af766a5e52f70b2ed83087a45be314cb2cbd139e..f15c8b49e9795077b3448a6db729455fc732b405 100644
+--- a/PostListBack/core/models.py
++++ b/PostListBack/core/models.py
+@@ -1,119 +1,165 @@
+ from django.db import models
+ from django.db.models import Q, CheckConstraint
+ from django.core.exceptions import ValidationError
++from django.core.validators import RegexValidator
++from django.utils import timezone
++
++
++def current_order_month():
++    return timezone.localdate().strftime("%Y-%m")
+ 
+ 
+ class ArtStatus(models.TextChoices):
+     DONE = "done", "Готово"
+     IN_PROGRESS = "in_progress", "В процессе"
+     CANCELLED = "cancelled", "Отменено"
+     ONLY_PLANNED = "only_planned", "Только запланировано"
+     WAITING_TO_START = "waiting_to_start", "Ожидает начала"
++    DELETED = "deleted", "Удалено"
+ 
+ 
+ class IsFurry(models.TextChoices):
+     YES = "yes", "Фурри"
+     NO = "no", "Не фурри"
+ 
+ 
+ class IsHuman(models.TextChoices):
+     YES = "yes", "Человек"
+     NO = "no", "Не человек"
+ 
+ 
+ class HowLewd(models.TextChoices):
+     ONLY_LEWD = "only_lewd", "Только NSFW"
+     ONLY_DECENT = "only_decent", "Только SFW"
+     BOTH = "both", "Обе версии"
+     LEWD_WITH_SFW_VARIANT = "lewd_with_sfw_variant", "NSFW + SFW-кроп/спойлер"
+ 
+ 
+ class PostState(models.TextChoices):
+     NOT_POSTED = "not_posted", "Не выложено"
+     SCHEDULED = "scheduled", "Запланировано"
+     POSTED = "posted", "Выложено"
+ 
+ 
++class PaymentStatus(models.TextChoices):
++    UNPAID = "unpaid", "Не оплачена"
++    PARTIALLY_PAID = "partially_paid", "Частично оплачена"
++    FULLY_PAID = "fully_paid", "Фул оплачена"
++    HALF_BEFORE_SKETCH = "half_before_sketch", "Половина до скетча"
++
++
++class PayoutStatus(models.TextChoices):
++    NOT_WITHDRAWN = "not_withdrawn", "Не выведено"
++    WITHDRAWN = "withdrawn", "Выведено"
++
++
+ class Art(models.Model):
+     name = models.CharField(max_length=200)
+ 
+     status = models.CharField(
+         max_length=32,
+         choices=ArtStatus.choices,
+         default=ArtStatus.ONLY_PLANNED,
+         db_index=True,
+     )
+ 
+     locked = models.BooleanField(default=False)
+ 
++    order_month = models.CharField(
++        max_length=7,
++        default=current_order_month,
++        db_index=True,
++        validators=[
++            RegexValidator(
++                regex=r"^\d{4}-(0[1-9]|1[0-2])$",
++                message="Месяц заказа должен быть в формате YYYY-MM.",
++            ),
++        ],
++        help_text="Месяц заказа в формате YYYY-MM.",
++    )
++
+     # На будущее лучше DecimalField(max_digits=10, decimal_places=2)
+     price = models.IntegerField(default=0)
+ 
++    payment_status = models.CharField(
++        max_length=32,
++        choices=PaymentStatus.choices,
++        default=PaymentStatus.UNPAID,
++        db_index=True,
++    )
++
++    payout_status = models.CharField(
++        max_length=32,
++        choices=PayoutStatus.choices,
++        default=PayoutStatus.NOT_WITHDRAWN,
++        db_index=True,
++    )
++
+     furry_type = models.CharField(
+         max_length=32,
+         choices=IsFurry.choices,
+         default=IsFurry.NO,
+     )
+ 
+     human_type = models.CharField(
+         max_length=32,
+         choices=IsHuman.choices,
+         default=IsHuman.YES,
+     )
+ 
+     is_nsfw = models.BooleanField(default=False)
+     is_sfw = models.BooleanField(default=False)
+     is_nsfw_plus_crop = models.BooleanField(default=False)
+ 
+     # куда планируем постить
+     post_on_bsky = models.BooleanField(default=False)
+     post_on_lewd_twi = models.BooleanField(default=False)
+     post_on_decent_twi = models.BooleanField(default=False)
+ 
+     # статусы по площадкам
+     bsky_posted = models.CharField(
+         max_length=12,
+         choices=PostState.choices,
+         default=PostState.NOT_POSTED,
+     )
+     lewd_twi_posted = models.CharField(
+         max_length=12,
+         choices=PostState.choices,
+         default=PostState.NOT_POSTED,
+     )
+     decent_twi_posted = models.CharField(
+         max_length=12,
+         choices=PostState.choices,
+         default=PostState.NOT_POSTED,
+     )
+ 
+     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+     updated_at = models.DateTimeField(auto_now=True)
+ 
+     class Meta:
+-        ordering = ("-created_at",)
++        ordering = ("-order_month", "-created_at")
+ 
+         # DB-уровень: не даём сохранить невозможные комбинации даже при прямой работе с моделью
+         constraints = [
+             # Нельзя одновременно иметь полноценную SFW и режим "NSFW + crop"
+             CheckConstraint(
+                 check=~(
+                         Q(is_nsfw_plus_crop=True) &
+                         Q(is_sfw=True)
+                 ),
+                 name="art_no_sfw_with_nsfw_plus_crop",
+             ),
+             # "NSFW + crop" требует существования полноценной NSFW-версии
+             CheckConstraint(
+                 check=~(
+                         Q(is_nsfw_plus_crop=True) &
+                         Q(is_nsfw=False)
+                 ),
+                 name="art_nsfw_plus_crop_requires_nsfw",
+             ),
+         ]
+ 
+     def clean(self):
+         super().clean()
+ 
+         errors = {}
+diff --git a/PostListBack/core/serializer.py b/PostListBack/core/serializer.py
+index 1e3d64de9bf13a3c34d6ed0681f3c4c8700d71b6..92ff0b2f4a98c79b4aa5da0f423227966cf05a12 100644
+--- a/PostListBack/core/serializer.py
++++ b/PostListBack/core/serializer.py
+@@ -1,21 +1,27 @@
+ from .models import Art
+ 
+ 
+ def serialize_art(a: Art) -> dict:
+     return {
+         "id": a.id,
+         "name": a.name,
+         "status": a.status,
+         "human_type": a.human_type,
+         "furry_type": a.furry_type,
++        "order_month": a.order_month,
+         "price": a.price,
++        "payment_status": a.payment_status,
++        "payout_status": a.payout_status,
++        "is_sfw": a.is_sfw,
++        "is_nsfw": a.is_nsfw,
++        "is_nsfw_plus_crop": a.is_nsfw_plus_crop,
+         "post_on_bsky": a.post_on_bsky,
+         "post_on_decent_twi": a.post_on_decent_twi,
+         "post_on_lewd_twi": a.post_on_lewd_twi,
+         "bsky_posted": a.bsky_posted,
+         "decent_twi_posted": a.decent_twi_posted,
+         "lewd_twi_posted": a.lewd_twi_posted,
+         "created_at": a.created_at.isoformat(),
+         "updated_at": a.updated_at.isoformat(),
+         "locked": a.locked,
+     }
+diff --git a/PostListBack/core/views.py b/PostListBack/core/views.py
+index 309cf8f60f92225e5551bce668689a43c1be5471..41213679e36f91ad5c78d4efbe100027169e8579 100644
+--- a/PostListBack/core/views.py
++++ b/PostListBack/core/views.py
+@@ -1,182 +1,256 @@
+ import json
++import re
++from django.core.exceptions import ValidationError
+ from django.http import JsonResponse, HttpResponseNotAllowed
+ from django.views.decorators.csrf import csrf_exempt
+ 
+-from .models import Art, ArtStatus, IsHuman, IsFurry, PostState
++from .models import (
++    Art,
++    ArtStatus,
++    IsHuman,
++    IsFurry,
++    PaymentStatus,
++    PayoutStatus,
++    PostState,
++)
+ from .serializer import serialize_art
+ 
+ 
+ def validate_choice(value, choices, field_name):
+     valid_values = [c[0] for c in choices]
+     if value not in valid_values:
+         return JsonResponse(
+             {
+                 "detail": (
+                     f"Недопустимое значение '{value}' для поля '{field_name}'. "
+                     f"Допустимо одно из: {valid_values}"
+                 )
+             },
+             status=400,
+         )
+     return None
+ 
+ 
++def validate_order_month(value):
++    if not re.match(r"^\d{4}-(0[1-9]|1[0-2])$", str(value)):
++        return JsonResponse(
++            {"detail": "Поле 'order_month' должно быть в формате YYYY-MM."},
++            status=400,
++        )
++    return None
++
++
++def validation_error_response(err):
++    if hasattr(err, "message_dict"):
++        return JsonResponse({"detail": err.message_dict}, status=400)
++    return JsonResponse({"detail": err.messages}, status=400)
++
++
++def model_field_default(field_name):
++    default = Art._meta.get_field(field_name).default
++    if callable(default):
++        return default()
++    return default
++
++
+ def parse_int(value, field_name):
+     try:
+         return int(value)
+     except (TypeError, ValueError):
+         return JsonResponse(
+             {"detail": f"Поле '{field_name}' должно быть целым числом."},
+             status=400,
+         )
+ 
+ 
+ def healthcheck(request):
+     return JsonResponse({"status": "ok", "app": "core"})
+ 
+ 
+ @csrf_exempt  # только для разработки, потом уберём/заменим на норм. аутентификацию
+ def arts_list(request):
+     if request.method == "GET":
+-        qs = Art.objects.all().order_by("-created_at")
++        qs = Art.objects.exclude(status=ArtStatus.DELETED).order_by(
++            "-order_month", "-created_at"
++        )
+         return JsonResponse({"items": [serialize_art(a) for a in qs]})
+ 
+     if request.method == "POST":
+         try:
+             data = json.loads(request.body or "{}")
+         except json.JSONDecodeError:
+             return JsonResponse({"detail": "Invalid JSON"}, status=400)
+ 
+         name = (data.get("name") or "").strip()
+         if not name:
+             return JsonResponse({"detail": "Field 'name' is required"}, status=400)
+ 
+         # choices валидация
+         for fld, choices in (
+             ("status", ArtStatus.choices),
+             ("human_type", IsHuman.choices),
+             ("furry_type", IsFurry.choices),
+             ("bsky_posted", PostState.choices),
+             ("decent_twi_posted", PostState.choices),
+             ("lewd_twi_posted", PostState.choices),
++            ("payment_status", PaymentStatus.choices),
++            ("payout_status", PayoutStatus.choices),
+         ):
+             if fld in data and data[fld] is not None:
+                 err = validate_choice(data[fld], choices, fld)
+                 if err:
+                     return err
+ 
++        if "order_month" in data and data["order_month"] is not None:
++            err = validate_order_month(data["order_month"])
++            if err:
++                return err
++
+         # price
+         if "price" in data and data["price"] is not None:
+             parsed = parse_int(data["price"], "price")
+             if isinstance(parsed, JsonResponse):
+                 return parsed
+             price = parsed
+         else:
+             price = 0
+ 
+-        a = Art.objects.create(
++        a = Art(
+             name=name,
+-            status=data.get("status") or Art._meta.get_field("status").default,
++            status=data.get("status") or model_field_default("status"),
+             human_type=(
+-                data.get("human_type") or Art._meta.get_field("human_type").default
++                data.get("human_type") or model_field_default("human_type")
+             ),
+             furry_type=(
+-                data.get("furry_type") or Art._meta.get_field("furry_type").default
++                data.get("furry_type") or model_field_default("furry_type")
++            ),
++            order_month=(
++                data.get("order_month") or model_field_default("order_month")
+             ),
+             price=price,
++            payment_status=(
++                data.get("payment_status")
++                or model_field_default("payment_status")
++            ),
++            payout_status=(
++                data.get("payout_status")
++                or model_field_default("payout_status")
++            ),
+             # sfw/nsfw-флаги
+             is_sfw=bool(data.get("is_sfw") or False),
+             is_nsfw=bool(data.get("is_nsfw") or False),
+             is_nsfw_plus_crop=bool(data.get("is_nsfw_plus_crop") or False),
+             # куда планируем постить
+             post_on_bsky=bool(data.get("post_on_bsky") or False),
+             post_on_decent_twi=bool(data.get("post_on_decent_twi") or False),
+             post_on_lewd_twi=bool(data.get("post_on_lewd_twi") or False),
+             # статусы по площадкам
+             bsky_posted=(
+                 data.get("bsky_posted")
+-                or Art._meta.get_field("bsky_posted").default
++                or model_field_default("bsky_posted")
+             ),
+             decent_twi_posted=(
+                 data.get("decent_twi_posted")
+-                or Art._meta.get_field("decent_twi_posted").default
++                or model_field_default("decent_twi_posted")
+             ),
+             lewd_twi_posted=(
+                 data.get("lewd_twi_posted")
+-                or Art._meta.get_field("lewd_twi_posted").default
++                or model_field_default("lewd_twi_posted")
+             ),
+             # замок
+             locked=bool(data.get("locked") or False),
+         )
++        try:
++            a.full_clean()
++        except ValidationError as err:
++            return validation_error_response(err)
++
++        a.save()
+         return JsonResponse(serialize_art(a), status=201)
+ 
+     return HttpResponseNotAllowed(["GET", "POST"])
+ 
+ 
+ @csrf_exempt
+ def art_detail(request, art_id: int):
+     try:
+         a = Art.objects.get(pk=art_id)
+     except Art.DoesNotExist:
+         return JsonResponse({"detail": "Not found"}, status=404)
+ 
+     if request.method == "GET":
+         return JsonResponse(serialize_art(a))
+ 
+     if request.method in ("PATCH", "PUT"):
+         try:
+             data = json.loads(request.body or "{}")
+         except json.JSONDecodeError:
+             return JsonResponse({"detail": "Invalid JSON"}, status=400)
+ 
+         # choices валидация
+         for fld, choices in (
+             ("status", ArtStatus.choices),
+             ("human_type", IsHuman.choices),
+             ("furry_type", IsFurry.choices),
+             ("bsky_posted", PostState.choices),
+             ("decent_twi_posted", PostState.choices),
+             ("lewd_twi_posted", PostState.choices),
++            ("payment_status", PaymentStatus.choices),
++            ("payout_status", PayoutStatus.choices),
+         ):
+             if fld in data and data[fld] is not None:
+                 err = validate_choice(data[fld], choices, fld)
+                 if err:
+                     return err
+ 
++        if "order_month" in data and data["order_month"] is not None:
++            err = validate_order_month(data["order_month"])
++            if err:
++                return err
++
+         # частичное обновление: только присланные поля
+         for field in [
+             "name",
+             "status",
+             "human_type",
+             "furry_type",
++            "order_month",
++            "payment_status",
++            "payout_status",
+             "bsky_posted",
+             "decent_twi_posted",
+             "lewd_twi_posted",
+             "locked",
+             "is_sfw",
+             "is_nsfw",
+             "is_nsfw_plus_crop",
+         ]:
+             if field in data and data[field] is not None:
+                 setattr(a, field, data[field])
+ 
+         # булевы-флаги "куда планируем постить"
+         for bfield in ["post_on_bsky", "post_on_decent_twi", "post_on_lewd_twi"]:
+             if bfield in data and data[bfield] is not None:
+                 setattr(a, bfield, bool(data[bfield]))
+ 
+         # price
+         if "price" in data and data["price"] is not None:
+             parsed = parse_int(data["price"], "price")
+             if isinstance(parsed, JsonResponse):
+                 return parsed
+             a.price = parsed
+ 
++        try:
++            a.full_clean()
++        except ValidationError as err:
++            return validation_error_response(err)
++
+         a.save()
+         return JsonResponse(serialize_art(a))
+ 
+     if request.method == "DELETE":
+-        a.delete()
+-        return JsonResponse({"deleted": True})
++        a.status = ArtStatus.DELETED
++        a.save(update_fields=["status", "updated_at"])
++        return JsonResponse(serialize_art(a))
+ 
+     return HttpResponseNotAllowed(["GET", "PATCH", "PUT", "DELETE"])
+diff --git a/PostListFront/posthub-ui/src/App.vue b/PostListFront/posthub-ui/src/App.vue
+index 76d6cbe6968dc241874c4310f1bcfbb18b6478fa..2507f2cb39be387d773d9beb6af7b863fcaebb54 100644
+--- a/PostListFront/posthub-ui/src/App.vue
++++ b/PostListFront/posthub-ui/src/App.vue
+@@ -1,30 +1,31 @@
+ <script setup>
+ import { ref } from 'vue'
+ import http from './api/http'
+ import { ElMessage } from 'element-plus'
+ import ArtsTable from './components/ArtsTable.vue'
++import OrdersTable from './components/OrdersTable.vue'
+ import RightPanel from './components/RightPanel.vue'
+ 
+ const loading = ref(false)
+ const items = ref([])
+ const showContent = ref(false)
+ 
+ const contentPanelId = 'central-panel'
+ 
+ const loadData = async () => {
+   loading.value = true
+   try {
+     const { data } = await http.get('/api/arts/')
+     items.value = Array.isArray(data?.items) ? data.items : []
+     ElMessage.success('Загружено')
+   } catch (e) {
+     ElMessage.error('Ошибка загрузки')
+   } finally {
+     loading.value = false
+   }
+ }
+ 
+ const toggleContent = () => {
+   showContent.value = !showContent.value
+ }
+ </script>
+@@ -36,51 +37,58 @@ const toggleContent = () => {
+     <div class="content-shell">
+       <div class="content-transition-wrapper" :id="contentPanelId">
+         <transition name="content-fade" mode="out-in">
+           <div v-if="showContent" key="content" class="app-content">
+             <div class="content-controls">
+               <el-button
+                   class="toggle-button"
+                   type="primary"
+                   plain
+                   size="small"
+                   :aria-expanded="showContent"
+                   :aria-controls="contentPanelId"
+                   @click="toggleContent"
+               >
+                 Скрыть центральную панель
+               </el-button>
+             </div>
+ 
+             <h1 class="app-title">posthub ui</h1>
+ 
+             <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
+               Загрузить данные с Django
+             </el-button>
+ 
+             <div class="table-wrapper">
+-              <ArtsTable :items="items" />
++              <el-tabs class="data-tabs" type="border-card">
++                <el-tab-pane label="Арты">
++                  <ArtsTable :items="items" />
++                </el-tab-pane>
++                <el-tab-pane label="Заказы / деньги">
++                  <OrdersTable :items="items" />
++                </el-tab-pane>
++              </el-tabs>
+             </div>
+           </div>
+ 
+           <div v-else key="placeholder" class="content-placeholder">
+             <el-button
+                 class="toggle-button"
+                 type="primary"
+                 plain
+                 size="small"
+                 :aria-expanded="showContent"
+                 :aria-controls="contentPanelId"
+                 @click="toggleContent"
+             >
+               Открыть центральную панель
+             </el-button>
+           </div>
+         </transition>
+       </div>
+     </div>
+   </div>
+ </template>
+ 
+ <style scoped>
+ .app-layout {
+   display: flex;
+@@ -125,58 +133,62 @@ const toggleContent = () => {
+   align-items: flex-start;
+   justify-content: flex-start;
+   padding: 32px 24px;
+   box-sizing: border-box;
+   background: var(--el-bg-color-page);
+ }
+ 
+ .content-placeholder .toggle-button {
+   margin-top: 12px;
+ }
+ 
+ .app-title {
+   font-size: 40px;
+   font-weight: 700;
+   letter-spacing: 0.6px;
+   text-transform: lowercase;
+   margin: 0;
+   text-align: center;
+ }
+ 
+ .load-button {
+   align-self: center;
+ }
+ 
+ .table-wrapper {
+-  width: min(840px, 100%);
++  width: min(1120px, 100%);
+   align-self: stretch;
+ }
+ 
+ .toggle-button {
+   letter-spacing: 0.3px;
+ }
+ 
++.data-tabs {
++  width: 100%;
++}
++
+ .content-fade-enter-active,
+ .content-fade-leave-active {
+   transition: opacity 0.18s ease, transform 0.18s ease;
+ }
+ 
+ .content-fade-enter-from,
+ .content-fade-leave-to {
+   opacity: 0;
+   transform: translateY(8px);
+ }
+ 
+ @media (max-width: 960px) {
+   .app-layout {
+     flex-direction: column;
+   }
+ 
+   .content-shell {
+     width: 100%;
+   }
+ 
+   .app-content {
+     padding: 24px;
+   }
+ 
+   .content-placeholder {
+diff --git a/PostListFront/posthub-ui/src/api/artMappers.js b/PostListFront/posthub-ui/src/api/artMappers.js
+index 738c54d464f10c06a16f9f25939c364aa5d481fa..d30cf780a0d94ea6d3e7a2ebcacdd9c9f7d19242 100644
+--- a/PostListFront/posthub-ui/src/api/artMappers.js
++++ b/PostListFront/posthub-ui/src/api/artMappers.js
+@@ -1,137 +1,141 @@
+ // src/api/artMapper.js
+ 
+ // Нормализация статуса из API во внутренний формат UI
+ export function normalizeStatusFromApi(apiStatus) {
+     if (!apiStatus) return 'only_planned'
+ 
+     switch (apiStatus) {
+         case 'done':
+             return 'complete'
+         case 'in_progress':
+             return 'in_progress'
+         case 'cancelled':
+             return 'cancelled'
+         case 'only_planned':
+             return 'only_planned'
+         case 'waiting_to_start':
+             return 'waiting_to_start'
++        case 'deleted':
++            return 'deleted'
+         default:
+             return apiStatus
+     }
+ }
+ 
+ // Обратная нормализация: из UI в то, что ждёт Django
+ export function normalizeStatusToApi(uiStatus) {
+     if (!uiStatus) return 'only_planned'
+ 
+     switch (uiStatus) {
+         case 'complete':
+             return 'done'
++        case 'done':
++            return 'done'
+         case 'in_progress':
+             return 'in_progress'
+         case 'cancelled':
+             return 'cancelled'
+         case 'only_planned':
+             return 'only_planned'
+         case 'waiting_to_start':
+             return 'waiting_to_start'
++        case 'deleted':
++            return 'deleted'
+         default:
+             return uiStatus
+     }
+ }
+ 
+ // Из API → во внутренний формат, с которым работает RightPanel
+ export function mapArtFromApi(row) {
+     const art = {}
+ 
+     art.id = row.id
+     art.name = row.name || ''
+ 
+-    // статус: конверсия done -> complete
+-    if (row.status === 'done') {
+-        art.status = 'complete'
+-    } else {
+-        art.status = 'in_progress'
+-    }
++    // статус: конверсия done -> complete, остальные статусы сохраняем как есть
++    art.status = normalizeStatusFromApi(row.status)
+ 
+     // человек / фурри
+     art.human = row.human_type === 'yes'
+     art.furry = row.furry_type === 'yes'
+ 
+     // контент
+     art.sfw = Boolean(row.is_sfw)
+     art.nsfw = Boolean(row.is_nsfw)
+     art.crop = Boolean(row.is_nsfw_plus_crop)
+ 
+     // куда постить
+     art.post_targets = {
+         twi16: Boolean(row.post_on_decent_twi),
+         twi18: Boolean(row.post_on_lewd_twi),
+         bsky:  Boolean(row.post_on_bsky),
+     }
+ 
+     // что выложено
+     art.posted = {
+         twi16: row.decent_twi_posted === 'posted',
+         twi18: row.lewd_twi_posted === 'posted',
+         bsky:  row.bsky_posted === 'posted',
+     }
+ 
+     art.locked = Boolean(row.locked)
++    art.orderMonth = row.order_month || ''
+     art.price = row.price ?? 0
++    art.paymentStatus = row.payment_status || 'unpaid'
++    art.payoutStatus = row.payout_status || 'not_withdrawn'
+ 
+     art.createdAt = row.created_at
+     art.updatedAt = row.updated_at
+ 
+     return art
+ }
+ 
+ 
+ // Из внутреннего формата UI → в JSON тела запроса к API
+ export function mapArtToApi(art) {
+     const payload = {}
+ 
+     payload.name = art.name
+ 
+-    // конверсия статуса
+-    if (art.status === 'complete') {
+-        payload.status = 'done'
+-    } else {
+-        payload.status = 'in_progress'
+-    }
++    // конверсия статуса без потери only_planned/waiting_to_start/cancelled/deleted
++    payload.status = normalizeStatusToApi(art.status)
+ 
+     payload.human_type = art.human ? 'yes' : 'no'
+     payload.furry_type = art.furry ? 'yes' : 'no'
+ 
+     payload.is_sfw = Boolean(art.sfw)
+     payload.is_nsfw = Boolean(art.nsfw)
+     payload.is_nsfw_plus_crop = Boolean(art.crop)
+ 
+     payload.post_on_decent_twi = Boolean(art.post_targets.twi16)
+     payload.post_on_lewd_twi   = Boolean(art.post_targets.twi18)
+     payload.post_on_bsky       = Boolean(art.post_targets.bsky)
+ 
+     if (art.posted.twi16) {
+         payload.decent_twi_posted = 'posted'
+     } else {
+         payload.decent_twi_posted = 'not_posted'
+     }
+ 
+     if (art.posted.twi18) {
+         payload.lewd_twi_posted = 'posted'
+     } else {
+         payload.lewd_twi_posted = 'not_posted'
+     }
+ 
+     if (art.posted.bsky) {
+         payload.bsky_posted = 'posted'
+     } else {
+         payload.bsky_posted = 'not_posted'
+     }
+ 
+     payload.locked = Boolean(art.locked)
++    payload.order_month = art.orderMonth || art.order_month
+     payload.price = art.price ?? 0
++    payload.payment_status = art.paymentStatus || art.payment_status || 'unpaid'
++    payload.payout_status = art.payoutStatus || art.payout_status || 'not_withdrawn'
+ 
+     return payload
+ }
+ 
+diff --git a/PostListFront/posthub-ui/src/components/ArtsTable.vue b/PostListFront/posthub-ui/src/components/ArtsTable.vue
+index 472939f6ec706de48d78ce302c05598aab7a8836..f09fd81744d6b72b685c5f2071107116361c8c15 100644
+--- a/PostListFront/posthub-ui/src/components/ArtsTable.vue
++++ b/PostListFront/posthub-ui/src/components/ArtsTable.vue
+@@ -1,34 +1,35 @@
+ <script setup>
+ import { computed } from 'vue'
+ 
+ const props = defineProps({
+   items: { type: Array, default: () => [] }
+ })
+ 
+ const rows = computed(() => props.items)
+ </script>
+ 
+ <template>
+   <el-table :data="rows" style="width: 100%" size="large" stripe>
+     <el-table-column prop="id" label="ID" width="70" />
+     <el-table-column prop="name" label="Название" min-width="220" />
+     <el-table-column prop="status" label="Статус" width="140" />
++    <el-table-column prop="order_month" label="Месяц" width="110" />
+     <el-table-column prop="price" label="Цена" width="100" />
+     <el-table-column prop="post_on_bsky" label="BSky" width="90">
+       <template #default="{ row }">
+         <el-tag :type="row.post_on_bsky ? 'success' : 'info'">
+           {{ row.post_on_bsky ? 'да' : 'нет' }}
+         </el-tag>
+       </template>
+     </el-table-column>
+     <el-table-column label="Twitter">
+       <template #default="{ row }">
+         <el-space>
+           <el-tag :type="row.post_on_decent_twi ? 'success' : 'info'">decent</el-tag>
+           <el-tag :type="row.post_on_lewd_twi ? 'danger'  : 'info'">lewd</el-tag>
+         </el-space>
+       </template>
+     </el-table-column>
+     <el-table-column prop="created_at" label="Создано" width="190" />
+   </el-table>
+ </template>
+diff --git a/PostListFront/posthub-ui/src/components/OrdersTable.vue b/PostListFront/posthub-ui/src/components/OrdersTable.vue
+new file mode 100644
+index 0000000000000000000000000000000000000000..3c5c77a4444e54c4b4dfbbf51dd35888e5806c9b
+--- /dev/null
++++ b/PostListFront/posthub-ui/src/components/OrdersTable.vue
+@@ -0,0 +1,209 @@
++<script setup>
++import { computed } from 'vue'
++import { ElMessage } from 'element-plus'
++import http from '../api/http'
++
++const props = defineProps({
++  items: { type: Array, default: () => [] },
++})
++
++const paymentLabels = {
++  unpaid: 'Не оплачена',
++  partially_paid: 'Частично оплачена',
++  fully_paid: 'Фул оплачена',
++  half_before_sketch: 'Половина до скетча',
++}
++
++const paymentTypes = {
++  unpaid: 'danger',
++  partially_paid: 'warning',
++  fully_paid: 'success',
++  half_before_sketch: 'primary',
++}
++
++const payoutLabels = {
++  not_withdrawn: 'Не выведено',
++  withdrawn: 'Выведено',
++}
++
++const payoutTypes = {
++  not_withdrawn: 'info',
++  withdrawn: 'success',
++}
++
++const paymentOptions = Object.entries(paymentLabels).map(([value, label]) => ({ value, label }))
++const payoutOptions = Object.entries(payoutLabels).map(([value, label]) => ({ value, label }))
++
++const saveOrderFields = async (row) => {
++  try {
++    await http.patch(`/api/arts/${row.id}/`, {
++      order_month: row.order_month,
++      price: row.price,
++      payment_status: row.payment_status,
++      payout_status: row.payout_status,
++    })
++    ElMessage.success('Заказ сохранён')
++  } catch (err) {
++    ElMessage.error('Не удалось сохранить заказ')
++  }
++}
++
++const formatMoney = (value) => {
++  const amount = Number(value || 0)
++  return new Intl.NumberFormat('ru-RU', {
++    maximumFractionDigits: 0,
++  }).format(amount)
++}
++
++const rows = computed(() => props.items)
++
++const totalPrice = computed(() => rows.value.reduce((sum, row) => sum + Number(row.price || 0), 0))
++
++const monthGroups = computed(() => {
++  const groups = new Map()
++
++  rows.value.forEach((row) => {
++    const month = row.order_month || 'Без месяца'
++    const current = groups.get(month) || { month, count: 0, total: 0 }
++    current.count += 1
++    current.total += Number(row.price || 0)
++    groups.set(month, current)
++  })
++
++  return Array.from(groups.values()).sort((a, b) => b.month.localeCompare(a.month))
++})
++</script>
++
++<template>
++  <div class="orders-view">
++    <div class="orders-summary">
++      <el-card v-for="group in monthGroups" :key="group.month" class="orders-summary-card" shadow="never">
++        <div class="orders-summary-month">{{ group.month }}</div>
++        <div class="orders-summary-meta">
++          <span>{{ group.count }} заказ(ов)</span>
++          <strong>{{ formatMoney(group.total) }}</strong>
++        </div>
++      </el-card>
++
++      <el-card class="orders-summary-card orders-summary-card--total" shadow="never">
++        <div class="orders-summary-month">Итого</div>
++        <div class="orders-summary-meta">
++          <span>{{ rows.length }} заказ(ов)</span>
++          <strong>{{ formatMoney(totalPrice) }}</strong>
++        </div>
++      </el-card>
++    </div>
++
++    <el-table :data="rows" style="width: 100%" size="large" stripe>
++      <el-table-column label="Месяц" width="140" sortable prop="order_month">
++        <template #default="{ row }">
++          <el-input
++            v-model="row.order_month"
++            size="small"
++            placeholder="YYYY-MM"
++            @change="saveOrderFields(row)"
++          />
++        </template>
++      </el-table-column>
++      <el-table-column prop="name" label="Заказ" min-width="220" />
++      <el-table-column label="Стоимость" width="160" align="right" sortable prop="price">
++        <template #default="{ row }">
++          <el-input-number
++            v-model="row.price"
++            class="order-price-input"
++            :min="0"
++            :controls="false"
++            size="small"
++            @change="saveOrderFields(row)"
++          />
++        </template>
++      </el-table-column>
++      <el-table-column label="Статус оплаты" min-width="220">
++        <template #default="{ row }">
++          <el-select
++            v-model="row.payment_status"
++            size="small"
++            @change="saveOrderFields(row)"
++          >
++            <el-option
++              v-for="option in paymentOptions"
++              :key="option.value"
++              :label="option.label"
++              :value="option.value"
++            >
++              <el-tag :type="paymentTypes[option.value] || 'info'">
++                {{ option.label }}
++              </el-tag>
++            </el-option>
++          </el-select>
++        </template>
++      </el-table-column>
++      <el-table-column label="Вывод" width="170">
++        <template #default="{ row }">
++          <el-select
++            v-model="row.payout_status"
++            size="small"
++            @change="saveOrderFields(row)"
++          >
++            <el-option
++              v-for="option in payoutOptions"
++              :key="option.value"
++              :label="option.label"
++              :value="option.value"
++            >
++              <el-tag :type="payoutTypes[option.value] || 'info'">
++                {{ option.label }}
++              </el-tag>
++            </el-option>
++          </el-select>
++        </template>
++      </el-table-column>
++      <el-table-column prop="status" label="Статус арта" width="150" />
++    </el-table>
++  </div>
++</template>
++
++<style scoped>
++.orders-view {
++  display: flex;
++  flex-direction: column;
++  gap: 18px;
++}
++
++.orders-summary {
++  display: grid;
++  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
++  gap: 12px;
++}
++
++.orders-summary-card :deep(.el-card__body) {
++  padding: 14px 16px;
++}
++
++.orders-summary-card--total {
++  border-color: var(--el-color-primary-light-5);
++  background: var(--el-color-primary-light-9);
++}
++
++.orders-summary-month {
++  color: var(--el-text-color-secondary);
++  font-size: 13px;
++  margin-bottom: 6px;
++}
++
++.orders-summary-meta {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  gap: 12px;
++}
++
++.orders-summary-meta strong {
++  color: var(--el-text-color-primary);
++  font-size: 18px;
++}
++
++.order-price-input {
++  width: 120px;
++}
++</style>

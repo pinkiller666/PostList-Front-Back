@@ -1,6 +1,14 @@
 import random
 from django.core.management.base import BaseCommand
-from core.models import Art, ArtStatus, IsHuman, IsFurry, PostState
+from core.models import (
+    Art,
+    ArtStatus,
+    IsHuman,
+    IsFurry,
+    PaymentStatus,
+    PayoutStatus,
+    PostState,
+)
 
 
 DEMO_PREFIX = "demo_"
@@ -38,8 +46,11 @@ class Command(BaseCommand):
             human_type = random.choice([IsHuman.YES, IsHuman.NO])
             furry_type = random.choice([IsFurry.YES, IsFurry.NO])
 
-            # Цена (временно рандом)
+            # Месяц/деньги (временно рандом)
+            order_month = random.choice(["2026-03", "2026-04", "2026-05"])
             price = random.choice([0, 50, 100, 150, 200, 300])
+            payment_status = random.choice(PaymentStatus.values)
+            payout_status = random.choice(PayoutStatus.values)
 
             # Сценарий по SFW/NSFW:
             # 0: только SFW
@@ -87,7 +98,10 @@ class Command(BaseCommand):
                 name=name,
                 status=status,
                 locked=random.choice([True, False]),
+                order_month=order_month,
                 price=price,
+                payment_status=payment_status,
+                payout_status=payout_status,
                 human_type=human_type,
                 furry_type=furry_type,
                 is_sfw=is_sfw,

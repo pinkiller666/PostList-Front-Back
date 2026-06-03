@@ -4,6 +4,9 @@ import { Delete } from '@element-plus/icons-vue'
 import './RightPanel.css'
 import { mapArtFromApi } from '../api/artMappers'
 import { updateArt } from '../api/artApi'
+import { ArrowUp } from '@element-plus/icons-vue'
+import { Finished } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 const savingError = ref(null)
 const statusLabel = (s) => (s ? s.replace(/_/g, ' ') : '')
@@ -14,10 +17,6 @@ const ARTS_ENDPOINT = `${API_BASE}/api/arts/`     // эндпоинт arts_list
 const arts = ref([])
 const isLoading = ref(false)
 const loadError = ref(null)
-
-import { ArrowUp } from '@element-plus/icons-vue'
-import { Finished } from '@element-plus/icons-vue'
-
 
 const loadArts = async () => {
   isLoading.value = true
@@ -83,9 +82,24 @@ const nextStatus = (art) => {
 
 const statusTitle = (art) => `Сменить статус на ${statusLabel(nextStatus(art))}`
 
-function archiveArt(art) {
-  console.log('Нажата архивация для арта', art.id, art.name)
-  // позже сюда прикрутим реальный API-запрос
+async function markArtAsDeleted(art) {
+  const oldStatus = art.status
+
+  art.status = 'deleted'
+
+  try {
+    await updateArt(art)
+
+    arts.value = arts.value.filter(function (item) {
+      return item.id !== art.id
+    })
+
+    ElMessage.success('Арт удалён')
+  } catch (err) {
+    art.status = oldStatus
+    console.error('Ошибка удаления арта:', err)
+    ElMessage.error('Не удалось удалить арт')
+  }
 }
 
 function isAllClosed(art) {
@@ -242,7 +256,7 @@ const finishEditName = (art) => {
                     text
                     :icon="Delete"
                     size="small"
-                    @click.stop
+                    @click.stop="markArtAsDeleted(art)"
                     title="Удалить арт"
                 />
               </div>

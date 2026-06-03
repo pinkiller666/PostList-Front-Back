@@ -13,6 +13,7 @@ const rows = computed(() => props.items)
     <el-table-column prop="id" label="ID" width="70" />
     <el-table-column prop="name" label="Название" min-width="220" />
     <el-table-column prop="status" label="Статус" width="140" />
+    <el-table-column prop="order_month" label="Месяц" width="110" />
     <el-table-column prop="price" label="Цена" width="100" />
     <el-table-column prop="post_on_bsky" label="BSky" width="90">
       <template #default="{ row }">

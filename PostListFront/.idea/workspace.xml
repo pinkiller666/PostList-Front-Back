@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="112e4ba9-6d88-47f2-9166-782c366a67bd" name="Changes" comment="" />
+    <list default="true" id="112e4ba9-6d88-47f2-9166-782c366a67bd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/../PostListBack/PostListFront/posthub-ui/src/components/OrdersTable.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PostListBack/core/migrations/0002_order_month_payment_payout.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PostListBack/core/migrations/0003_add_deleted_art_status.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../PostListBack/patch.diff" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PostListBack/core/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PostListBack/core/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PostListBack/core/management/commands/seed_demo_arts.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PostListBack/core/management/commands/seed_demo_arts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PostListBack/core/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PostListBack/core/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PostListBack/core/serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PostListBack/core/serializer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PostListBack/core/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/../PostListBack/core/views.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,9 +23,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Vue Composition API Component" />
         <option value="CSS File" />
         <option value="JavaScript File" />
+        <option value="Vue Composition API Component" />
       </list>
     </option>
   </component>
@@ -87,6 +97,7 @@
       <workItem from="1763223664776" duration="9008000" />
       <workItem from="1763477901294" duration="21483000" />
       <workItem from="1765271159153" duration="2004000" />
+      <workItem from="1778765150674" duration="6320000" />
     </task>
     <servers />
   </component>

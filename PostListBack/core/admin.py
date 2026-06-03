@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Art
+from .models import Art, PaymentPart, Payout, PayoutAllocation
 
 
 @admin.register(Art)
@@ -9,6 +9,11 @@ class ArtAdmin(admin.ModelAdmin):
         "name",
         "locked",
         "status",
+        "order_month",
+        "is_fanart",
+        "price",
+        "payment_status",
+        "payout_status",
         "is_sfw",
         "is_nsfw",
         "is_nsfw_plus_crop",
@@ -25,6 +30,10 @@ class ArtAdmin(admin.ModelAdmin):
 
     list_filter = (
         "status",
+        "order_month",
+        "is_fanart",
+        "payment_status",
+        "payout_status",
         "human_type",
         "furry_type",
         "is_sfw",
@@ -41,7 +50,7 @@ class ArtAdmin(admin.ModelAdmin):
     )
 
     search_fields = ("name",)
-    ordering = ("-created_at",)
+    ordering = ("-order_month", "-created_at")
     date_hierarchy = "created_at"
 
     fieldsets = (
@@ -51,7 +60,11 @@ class ArtAdmin(admin.ModelAdmin):
                 "status",
                 "human_type",
                 "furry_type",
+                "order_month",
+                "is_fanart",
                 "price",
+                "payment_status",
+                "payout_status",
                 "locked",
             )
         }),
@@ -73,3 +86,84 @@ class ArtAdmin(admin.ModelAdmin):
             )
         }),
     )
+
+@admin.register(PaymentPart)
+class PaymentPartAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "art",
+        "amount_usd",
+        "status",
+        "note",
+        "created_at",
+        "updated_at",
+    )
+
+    list_filter = (
+        "status",
+        "created_at",
+        "updated_at",
+    )
+
+    search_fields = (
+        "art__name",
+        "note",
+    )
+
+    autocomplete_fields = (
+        "art",
+    )
+
+    ordering = ("-created_at",)
+
+
+@admin.register(Payout)
+class PayoutAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "order_month",
+        "date",
+        "amount_usd",
+        "amount_rub",
+        "exchange_rate",
+        "comment",
+        "created_at",
+    )
+
+    list_filter = (
+        "order_month",
+        "date",
+        "created_at",
+    )
+
+    search_fields = (
+        "comment",
+    )
+
+    ordering = ("-date", "-created_at")
+
+
+@admin.register(PayoutAllocation)
+class PayoutAllocationAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "payout",
+        "payment_part",
+        "amount_usd",
+        "created_at",
+    )
+
+    list_filter = (
+        "created_at",
+    )
+
+    search_fields = (
+        "payment_part__art__name",
+    )
+
+    autocomplete_fields = (
+        "payout",
+        "payment_part",
+    )
+
+    ordering = ("-created_at",)

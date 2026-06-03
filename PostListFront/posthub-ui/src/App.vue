@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import http from './api/http'
 import { ElMessage } from 'element-plus'
 import ArtsTable from './components/ArtsTable.vue'
+import OrdersTable from './components/OrdersTable.vue'
 import RightPanel from './components/RightPanel.vue'
 
 const loading = ref(false)
@@ -58,7 +59,14 @@ const toggleContent = () => {
             </el-button>
 
             <div class="table-wrapper">
-              <ArtsTable :items="items" />
+              <el-tabs class="data-tabs" type="border-card">
+                <el-tab-pane label="Арты">
+                  <ArtsTable :items="items" />
+                </el-tab-pane>
+                <el-tab-pane label="Заказы / деньги">
+                  <OrdersTable :items="items" />
+                </el-tab-pane>
+              </el-tabs>
             </div>
           </div>
 
@@ -147,12 +155,16 @@ const toggleContent = () => {
 }
 
 .table-wrapper {
-  width: min(840px, 100%);
+  width: min(1120px, 100%);
   align-self: stretch;
 }
 
 .toggle-button {
   letter-spacing: 0.3px;
+}
+
+.data-tabs {
+  width: 100%;
 }
 
 .content-fade-enter-active,

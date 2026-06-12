@@ -1,14 +1,53 @@
-/PostList Front/.idea
-codex.patch
-PostList Front/codexFront.patch
-PostList Front/.idea/workspace.xml
-PostList Front/.idea/workspace.xml
-PostListBack/db.sqlite3
-PostListFront/.idea/workspace.xml
-PostListBack/.idea/PostList.iml
-PostListBack/.idea/misc.xml
-/PostListBack/core/__pycache__
-*.pyc
-/PostListFront/.idea
-/PostListFront/.idea
-/PostListFront/.idea
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+ENV/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Node / frontend
+node_modules/
+dist/
+build/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Test / coverage caches
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+
+# Generated local artifacts
+project_structure.txt
+clean_structure.txt
+*.patch
+*.diff
+

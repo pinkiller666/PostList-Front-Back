@@ -9,4 +9,6 @@ urlpatterns = [
     path("api/payment-parts/", views.payment_parts_list, name="payment-parts-list"),
     path("api/payment-parts/<int:part_id>/", views.payment_part_detail, name="payment-part-detail"),
     path("api/payouts/", views.payouts_list, name="payouts-list"),
+    path("api/external-incomes/", views.external_incomes_list, name="external-incomes-list", ),
+    path("api/payouts/<int:payout_id>/", views.payout_detail, name="payout-detail"),
 ]

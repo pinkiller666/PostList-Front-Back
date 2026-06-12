@@ -289,3 +289,74 @@ class PayoutAllocation(models.Model):
     def __str__(self):
         return f"{self.payment_part.art.name}: ${self.amount_usd} in payout #{self.payout_id}"
 
+
+class ExternalIncomeSource(models.TextChoices):
+    PATREON = "patreon", "Patreon"
+    BOOSTY = "boosty", "Boosty"
+    TIP = "tip", "Типсы"
+    FAMILY = "family", "Родня"
+    STATE = "state", "Государство"
+    OTHER = "other", "Другое"
+
+
+class ExternalIncome(models.Model):
+    order_month = models.CharField(
+        max_length=7,
+        db_index=True,
+        default=current_order_month,
+        validators=[
+            RegexValidator(
+                regex=r"^\d{4}-(0[1-9]|1[0-2])$",
+                message="Месяц дохода должен быть в формате YYYY-MM.",
+            ),
+        ],
+    )
+
+    source = models.CharField(
+        max_length=32,
+        choices=ExternalIncomeSource.choices,
+        default=ExternalIncomeSource.OTHER,
+        db_index=True,
+    )
+
+    amount_usd = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    note = models.CharField(
+        max_length=200,
+        blank=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.order_month}: {self.source} ${self.amount_usd}"
+
+class ExternalIncomePayoutAllocation(models.Model):
+    payout = models.ForeignKey(
+        Payout,
+        related_name="external_allocations",
+        on_delete=models.CASCADE,
+    )
+
+    external_income = models.ForeignKey(
+        ExternalIncome,
+        related_name="payout_allocations",
+        on_delete=models.PROTECT,
+    )
+
+    amount_usd = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return (
+            f"{self.external_income.source}: "
+            f"${self.amount_usd} in payout #{self.payout_id}"
+        )

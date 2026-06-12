@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Art, PaymentPart, Payout, PayoutAllocation
+from .models import Art, ExternalIncomePayoutAllocation, PaymentPart, Payout, PayoutAllocation, ExternalIncome
 
 
 @admin.register(Art)
@@ -164,6 +164,55 @@ class PayoutAllocationAdmin(admin.ModelAdmin):
     autocomplete_fields = (
         "payout",
         "payment_part",
+    )
+
+    ordering = ("-created_at",)
+
+@admin.register(ExternalIncome)
+class ExternalIncomeAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "order_month",
+        "source",
+        "amount_usd",
+        "note",
+        "created_at",
+    )
+
+    list_filter = (
+        "order_month",
+        "source",
+        "created_at",
+    )
+
+    search_fields = (
+        "note",
+    )
+
+    ordering = ("-order_month", "-created_at")
+
+@admin.register(ExternalIncomePayoutAllocation)
+class ExternalIncomePayoutAllocationAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "payout",
+        "external_income",
+        "amount_usd",
+        "created_at",
+    )
+
+    list_filter = (
+        "created_at",
+    )
+
+    search_fields = (
+        "external_income__note",
+        "external_income__source",
+    )
+
+    autocomplete_fields = (
+        "payout",
+        "external_income",
     )
 
     ordering = ("-created_at",)

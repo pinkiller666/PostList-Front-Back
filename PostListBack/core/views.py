@@ -22,6 +22,8 @@ from .models import (
     ExternalIncome,
     ExternalIncomeSource,
     ExternalIncomePayoutAllocation,
+    Currency,
+    MoneyFlow,
 )
 from .serializer import serialize_art
 
@@ -50,6 +52,17 @@ def validate_order_month(value):
     return None
 
 
+def get_enum_value(data, field_name, enum_class, default_value):
+    value = data.get(field_name, default_value)
+
+    valid_values = {choice.value for choice in enum_class}
+
+    if value not in valid_values:
+        raise ValidationError(f"Некорректное значение поля {field_name}.")
+
+    return value
+
+
 def validation_error_response(err):
     if hasattr(err, "message_dict"):
         return JsonResponse({"detail": err.message_dict}, status=400)
@@ -74,15 +87,23 @@ def parse_int(value, field_name):
 
 
 def serialize_external_income(income):
-    withdrawn_usd = sum(
-        (
-            allocation.amount_usd
-            for allocation in income.payout_allocations.all()
-        ),
-        Decimal("0"),
-    )
+    zero = Decimal("0")
 
-    broker_usd = income.amount_usd - withdrawn_usd
+    if income.received_via == MoneyFlow.DIRECT.value:
+        withdrawn_usd = zero
+        broker_usd = zero
+        direct_usd = income.amount_usd
+    else:
+        withdrawn_usd = sum(
+            (
+                allocation.amount_usd
+                for allocation in income.payout_allocations.all()
+            ),
+            zero,
+        )
+
+        broker_usd = income.amount_usd - withdrawn_usd
+        direct_usd = zero
 
     return {
         "id": income.id,
@@ -91,9 +112,12 @@ def serialize_external_income(income):
         "amount_usd": str(income.amount_usd),
         "withdrawn_usd": str(withdrawn_usd),
         "broker_usd": str(broker_usd),
+        "direct_usd": str(direct_usd),
         "note": income.note,
         "created_at": income.created_at.isoformat(),
         "updated_at": income.updated_at.isoformat(),
+        "currency": income.currency,
+        "received_via": income.received_via,
     }
 
 
@@ -594,6 +618,28 @@ def payouts_list(request):
                 status=404,
             )
 
+        if income.received_via != MoneyFlow.BROKER.value:
+            return JsonResponse(
+                {
+                    "detail": (
+                        "Это поступление уже получено напрямую "
+                        "и не может быть добавлено в вывод."
+                    )
+                },
+                status=400,
+            )
+
+        if income.currency != Currency.USD.value:
+            return JsonResponse(
+                {
+                    "detail": (
+                        "Пока вывод поддерживает только USD-поступления. "
+                        "RUB-вывод добавим отдельным шагом."
+                    )
+                },
+                status=400,
+            )
+
         parsed_external_allocations.append({
             "income": income,
             "amount_usd": amount_usd,
@@ -712,6 +758,7 @@ def payouts_list(request):
         "exchange_rate": str(payout.exchange_rate),
     }, status=201)
 
+
 @csrf_exempt
 def payout_detail(request, payout_id: int):
     try:
@@ -756,6 +803,7 @@ def payout_detail(request, payout_id: int):
         "comment": payout.comment,
     })
 
+
 @csrf_exempt
 def external_incomes_list(request):
     if request.method != "POST":
@@ -794,10 +842,32 @@ def external_incomes_list(request):
             status=400,
         )
 
+    try:
+        currency = get_enum_value(
+            data,
+            "currency",
+            Currency,
+            Currency.USD.value,
+        )
+
+        received_via = get_enum_value(
+            data,
+            "received_via",
+            MoneyFlow,
+            MoneyFlow.BROKER.value,
+        )
+    except ValidationError as err:
+        return JsonResponse(
+            {"detail": err.messages[0]},
+            status=400,
+        )
+
     income = ExternalIncome.objects.create(
         order_month=order_month,
         source=source,
         amount_usd=amount_usd,
+        currency=currency,
+        received_via=received_via,
         note=data.get("note") or "",
     )
 

@@ -51,3 +51,9 @@ clean_structure.txt
 *.patch
 *.diff
 
+PostListBack/core/__pycache__/admin.cpython-311.pyc
+PostListBack/core/__pycache__/admin.cpython-311.pyc
+PostListBack/core/__pycache__/models.cpython-311.pyc
+PostListBack/core/__pycache__/views.cpython-311.pyc
+PostListBack/core/__pycache__/models.cpython-311.pyc
+PostListBack/core/__pycache__/admin.cpython-311.pyc

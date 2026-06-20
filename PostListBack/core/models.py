@@ -54,6 +54,16 @@ class PayoutStatus(models.TextChoices):
     WITHDRAWN = "withdrawn", "Выведено"
 
 
+class Currency(models.TextChoices):
+    USD = "usd", "USD"
+    RUB = "rub", "RUB"
+
+
+class MoneyFlow(models.TextChoices):
+    BROKER = "broker", "Через посредника"
+    DIRECT = "direct", "Напрямую"
+
+
 class Art(models.Model):
     name = models.CharField(max_length=200)
 
@@ -87,6 +97,12 @@ class Art(models.Model):
         choices=PaymentStatus.choices,
         default=PaymentStatus.UNPAID,
         db_index=True,
+    )
+
+    price_currency = models.CharField(
+        max_length=3,
+        choices=Currency.choices,
+        default=Currency.USD,
     )
 
     is_fanart = models.BooleanField(
@@ -193,6 +209,7 @@ class Art(models.Model):
     def __str__(self) -> str:
         return str(self.name)
 
+
 class PaymentPartStatus(models.TextChoices):
     EXPECTED = "expected", "Ожидается"
     RECEIVED = "received", "Получено у посредника"
@@ -216,6 +233,18 @@ class PaymentPart(models.Model):
         choices=PaymentPartStatus.choices,
         default=PaymentPartStatus.EXPECTED,
         db_index=True,
+    )
+
+    currency = models.CharField(
+        max_length=3,
+        choices=Currency.choices,
+        default=Currency.USD,
+    )
+
+    received_via = models.CharField(
+        max_length=16,
+        choices=MoneyFlow.choices,
+        default=MoneyFlow.BROKER,
     )
 
     note = models.CharField(max_length=200, blank=True)
@@ -319,6 +348,18 @@ class ExternalIncome(models.Model):
         db_index=True,
     )
 
+    currency = models.CharField(
+        max_length=3,
+        choices=Currency.choices,
+        default=Currency.USD,
+    )
+
+    received_via = models.CharField(
+        max_length=16,
+        choices=MoneyFlow.choices,
+        default=MoneyFlow.BROKER,
+    )
+
     amount_usd = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -334,6 +375,7 @@ class ExternalIncome(models.Model):
 
     def __str__(self):
         return f"{self.order_month}: {self.source} ${self.amount_usd}"
+
 
 class ExternalIncomePayoutAllocation(models.Model):
     payout = models.ForeignKey(

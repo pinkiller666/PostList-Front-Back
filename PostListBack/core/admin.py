@@ -1,5 +1,14 @@
+from decimal import Decimal
 from django.contrib import admin
-from .models import Art, ExternalIncomePayoutAllocation, PaymentPart, Payout, PayoutAllocation, ExternalIncome
+from .models import (
+    Art,
+    ExternalIncome,
+    ExternalIncomePayoutAllocation,
+    MoneyFlow,
+    PaymentPart,
+    Payout,
+    PayoutAllocation,
+)
 
 
 @admin.register(Art)
@@ -12,6 +21,7 @@ class ArtAdmin(admin.ModelAdmin):
         "order_month",
         "is_fanart",
         "price",
+        "price_currency",
         "payment_status",
         "payout_status",
         "is_sfw",
@@ -32,6 +42,7 @@ class ArtAdmin(admin.ModelAdmin):
         "status",
         "order_month",
         "is_fanart",
+        "price_currency",
         "payment_status",
         "payout_status",
         "human_type",
@@ -63,6 +74,7 @@ class ArtAdmin(admin.ModelAdmin):
                 "order_month",
                 "is_fanart",
                 "price",
+                "price_currency",
                 "payment_status",
                 "payout_status",
                 "locked",
@@ -93,6 +105,8 @@ class PaymentPartAdmin(admin.ModelAdmin):
         "id",
         "art",
         "amount_usd",
+        "currency",
+        "received_via",
         "status",
         "note",
         "created_at",
@@ -100,6 +114,8 @@ class PaymentPartAdmin(admin.ModelAdmin):
     )
 
     list_filter = (
+        "currency",
+        "received_via",
         "status",
         "created_at",
         "updated_at",
@@ -175,6 +191,11 @@ class ExternalIncomeAdmin(admin.ModelAdmin):
         "order_month",
         "source",
         "amount_usd",
+        "currency",
+        "received_via",
+        "withdrawn_usd_admin",
+        "broker_usd_admin",
+        "direct_usd_admin",
         "note",
         "created_at",
     )
@@ -182,6 +203,8 @@ class ExternalIncomeAdmin(admin.ModelAdmin):
     list_filter = (
         "order_month",
         "source",
+        "currency",
+        "received_via",
         "created_at",
     )
 
@@ -189,7 +212,59 @@ class ExternalIncomeAdmin(admin.ModelAdmin):
         "note",
     )
 
+    readonly_fields = (
+        "withdrawn_usd_admin",
+        "broker_usd_admin",
+        "direct_usd_admin",
+        "created_at",
+        "updated_at",
+    )
+
+    fields = (
+        "order_month",
+        "source",
+        "amount_usd",
+        "currency",
+        "received_via",
+        "note",
+        "withdrawn_usd_admin",
+        "broker_usd_admin",
+        "direct_usd_admin",
+        "created_at",
+        "updated_at",
+    )
+
     ordering = ("-order_month", "-created_at")
+
+    def withdrawn_usd_admin(self, obj):
+        if obj.received_via == MoneyFlow.DIRECT.value:
+            return Decimal("0")
+
+        return sum(
+            (
+                allocation.amount_usd
+                for allocation in obj.payout_allocations.all()
+            ),
+            Decimal("0"),
+        )
+
+    withdrawn_usd_admin.short_description = "Выведено"
+
+    def broker_usd_admin(self, obj):
+        if obj.received_via == MoneyFlow.DIRECT.value:
+            return Decimal("0")
+
+        return obj.amount_usd - self.withdrawn_usd_admin(obj)
+
+    broker_usd_admin.short_description = "У посредника"
+
+    def direct_usd_admin(self, obj):
+        if obj.received_via == MoneyFlow.DIRECT.value:
+            return obj.amount_usd
+
+        return Decimal("0")
+
+    direct_usd_admin.short_description = "Получено напрямую"
 
 @admin.register(ExternalIncomePayoutAllocation)
 class ExternalIncomePayoutAllocationAdmin(admin.ModelAdmin):

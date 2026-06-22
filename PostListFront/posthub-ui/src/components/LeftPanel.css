@@ -1,0 +1,722 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&display=swap');
+
+:root {
+    /* Базовая типографика */
+    --font-size-base: 1rem;          /* 16px */
+    --font-size-s: 0.8125rem;        /* 13px */
+    --font-size-xs: 0.75rem;         /* 12px */
+
+    /* Отступы / ритм */
+    --space-xs: 0.25rem;             /* 4px */
+    --space-s: 0.375rem;             /* 6px */
+    --space-m: 0.75rem;              /* 12px */
+    --space-l: 1rem;                 /* 16px */
+    --space-xl: 1.5rem;              /* 24px */
+
+    /* Сетка и блоки */
+    --panel-width: 45rem;            /* 720px */
+    --art-row-radius: 1rem;          /* 16px */
+    --chip-radius: 0.625rem;         /* 10px */
+    --art-row-item-height: 2rem;     /* 32px – высота строки/чипса/чекбокса */
+
+    /* Иконки / action-кнопки */
+    --icon-btn-size: 1.375rem;       /* ~22px */
+    --icon-font-size: 1rem;          /* 16px */
+    --name-actions-offset: -2em;     /* смещение обёртки иконок влево от названия */
+}
+
+/* Панель слева */
+.right-panel {
+    flex: 0 0 var(--panel-width);
+    width: var(--panel-width);
+    height: 100vh;
+    margin: 0;
+    background: var(--el-bg-color-page);
+    border-right: 1px solid var(--el-border-color);
+    overflow-y: auto;
+    padding: 1.75rem 1.5rem; /* 28px 24px */
+    box-sizing: border-box;
+    font-family: 'Manrope', 'Inter', 'Segoe UI', sans-serif;
+    color: var(--el-text-color-primary);
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.125rem;   /* 18px */
+    padding-bottom: 0.875rem;  /* 14px */
+    border-bottom: 1px solid var(--el-border-color-light);
+}
+
+.panel-title {
+    font-size: 1.25rem;   /* 20px */
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    margin: 0;
+}
+
+/* Список карточек */
+.panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);  /* 12px */
+    padding: 6px 12px; /* или 16px — подбирай */
+}
+
+/* Карточка */
+.art-row {
+    background: var(--el-bg-color);
+    border-radius: var(--art-row-radius);
+    border: 1px solid var(--el-border-color-lighter);
+    padding: 0.625rem 1rem 0.875rem; /* 10px 16px 14px */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs); /* 4px */
+    transition:
+            background 0.15s ease,
+            box-shadow 0.15s ease,
+            border-color 0.15s ease;
+}
+
+/* без эффекта наведения */
+.art-row:hover {
+    background: var(--el-bg-color);
+    box-shadow: none;
+    border-color: var(--el-border-color-lighter);
+}
+
+.art-row:not(.art-row--all-closed):hover {
+    background: var(--el-bg-color);
+    box-shadow: none;
+    border-color: var(--el-border-color-lighter);
+}
+
+/* ВЕРХНЯЯ ПОЛОСА */
+.art-row-header {
+    display: grid;
+    grid-template-columns: 3fr 0.95fr 1.1fr 1.1fr 1.1fr 0.9fr;
+    align-items: center;
+    column-gap: 0.625rem; /* 10px */
+}
+
+.header-lock {
+    display: flex;
+    align-items: flex-end;   /* ближе к названию */
+    justify-content: center; /* по центру колонки */
+}
+
+.header-posted {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: var(--space-m); /* 12px */
+    box-sizing: border-box;
+}
+
+/* ОСНОВНАЯ СЕТКА */
+.art-row-body {
+    display: grid;
+    grid-template-columns: 3fr 0.95fr 1.1fr 1.1fr 1.1fr 0.9fr;
+    align-items: center;
+    column-gap: 0.625rem; /* 10px */
+}
+
+/* Название + иконки */
+.art-name-wrap {
+    position: relative;
+    text-align: center;
+}
+
+.art-name {
+    font-weight: 500;
+    font-size: var(--font-size-base); /* 16px */
+    line-height: 1.32;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-align: center;
+    cursor: pointer;
+}
+
+/* Лёгкий ховер, чтобы было понятно, что по названию можно кликнуть */
+.art-name:hover {
+    color: var(--el-color-primary-dark-2);
+}
+
+/* Вертикальный стек внутри колонок */
+.vstack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--space-s);                /* 6px */
+    min-height: var(--art-row-item-height);
+}
+
+/* Вертикальные разделители между логическими колонками в теле */
+.col-sep {
+    border-left: 1px solid var(--el-border-color-light);
+    padding-left: var(--space-m);       /* 12px */
+}
+
+/* Кнопки-лейблы (куда постить, типы и т.п.) */
+.label-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 3.5rem;                  /* 56px */
+    padding: 0.375rem 0.625rem;         /* 6px 10px */
+    border-radius: var(--chip-radius);  /* 10px */
+    background: var(--el-fill-color-lighter);
+    color: var(--el-text-color-regular);
+    font-size: var(--font-size-s);      /* 13px */
+    font-weight: 500;
+    text-transform: lowercase;
+    letter-spacing: 0.2px;
+    opacity: 0.55;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+            opacity 0.18s ease,
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
+    min-height: var(--art-row-item-height);
+}
+
+.label-button:hover {
+    opacity: 0.85;
+    background: var(--el-fill-color);
+}
+
+.label-button.active {
+    opacity: 1;
+    background: var(--el-color-primary-light-9);
+    color: var(--el-color-primary);
+    border-color: var(--el-color-primary-light-7);
+}
+
+/* убираем чёрные рамки / фокусы */
+.label-button:focus,
+.label-button:focus-visible,
+.status-button:focus,
+.status-button:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+/* Статус */
+.status-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4375rem 1rem;           /* 7px 16px */
+    border-radius: 999px;
+    font-size: var(--font-size-s);     /* 13px */
+    font-weight: 600;
+    text-transform: lowercase;
+    background: var(--el-fill-color-lighter);
+    color: var(--el-text-color-primary);
+    letter-spacing: 0.3px;
+    min-width: 7rem;                   /* 112px */
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
+}
+
+.status-button.done {
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
+    border-color: var(--el-color-success-light-5);
+}
+
+/* Заголовок над чекбоксами */
+.col-head {
+    font-size: var(--font-size-xs);    /* 12px */
+    color: var(--el-text-color-secondary);
+    opacity: 0.8;
+    text-transform: lowercase;
+    text-align: center;
+    display: block;
+    width: 100%;
+}
+
+/* Чекбоксы: строго по центру колонки,
+   вертикально синхронно с колонкой соцсетей */
+.art-post,
+.art-posted {
+    align-items: center;
+}
+
+.art-posted .el-checkbox {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--art-row-item-height) !important;
+}
+
+.art-posted .el-checkbox__inner {
+    width: 1rem;    /* 16px */
+    height: 1rem;
+}
+
+.art-posted .el-checkbox__input {
+    margin-right: 0;
+}
+
+.art-posted .el-checkbox__input.is-focus .el-checkbox__inner {
+    box-shadow: none;
+}
+
+/* Глушим фокусы Element Plus */
+.label-button:focus,
+.label-button:focus-visible,
+.status-button:focus,
+.status-button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.right-panel button:focus,
+.right-panel button:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Для Element Plus: "псевдофокус" через класс is-focus */
+.right-panel .is-focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Фикс для Firefox, если вдруг */
+.right-panel button::-moz-focus-inner {
+    border: 0;
+}
+
+/* Контейнер иконок редактирования */
+.art-name-actions {
+    position: absolute;
+    left: -0.80em;   /* выносим иконки влево */
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 0px;               /* 6px */
+
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    transition: opacity 0.15s ease;
+
+    flex-direction: column;
+    align-items: center;
+}
+
+/*!* Показываем иконки только при наведении на строку *!*/
+/*.art-row:hover .art-name-wrap .art-name-actions {*/
+/*    opacity: 1;*/
+/*    pointer-events: auto;*/
+/*}*/
+
+.art-name-action-btn {
+    padding: 0;
+    width: var(--icon-btn-size);
+    height: var(--icon-btn-size);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    --el-button-text-color: var(--el-text-color-placeholder);
+    --el-button-hover-text-color: var(--el-text-color-secondary);
+}
+
+.art-name-action-btn .el-icon {
+    font-size: var(--icon-font-size);
+}
+
+/* Зона инпута, чтобы он не прилипал к краям */
+.art-name-edit .el-input {
+    width: 100%;
+}
+
+/* Фокус для кнопок-иконок редактирования */
+.art-name-action-btn:focus,
+.art-name-action-btn:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.art-name-actions .el-button + .el-button {
+    margin-left: 0 !important; /* глушим их дефолт */
+}
+
+/* Режим редактирования названия: делаем el-input невидимым внешне */
+.art-name-edit .el-input__wrapper {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    height: auto !important;
+}
+
+.art-name-edit .el-input {
+    width: 100%;
+}
+
+.art-name-edit input {
+    font-size: 16px;               /* совпадает с .art-name */
+    font-weight: 500;              /* совпадает с .art-name */
+    line-height: 1.32;             /* совпадает с .art-name */
+    text-align: center;            /* совпадает с .art-name */
+
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    color: var(--el-text-color-primary) !important;
+
+    /* Чтобы текст не прыгал вверх-вниз */
+    vertical-align: middle;
+}
+
+/* Убираем нижнюю красную волну при выделении неправильных слов */
+.art-name-edit input::-webkit-input-placeholder {
+    color: transparent;
+}
+
+/* Область прокрутки */
+.scroll-area {
+    height: 100%;
+    width: 100%;
+}
+
+/* Ползунок (thumb) — тонкий, мягкий, как в макоси */
+.scroll-area .el-scrollbar__thumb {
+    background-color: rgba(0, 0, 0, 0.18) !important;
+    border-radius: 8px !important;
+    transition: background-color 0.25s ease, opacity 0.25s ease;
+}
+
+/* При наведении — чуть темнее */
+.scroll-area .el-scrollbar__thumb:hover {
+    background-color: rgba(0, 0, 0, 0.32) !important;
+}
+
+/* Трек — полностью прозрачный */
+.scroll-area .el-scrollbar__bar {
+    background: transparent !important;
+}
+
+/*
+  Если хочешь эффект "появляется при скролле" как в macOS:
+  Делаем всё полупрозрачным
+*/
+.scroll-area .el-scrollbar__thumb {
+    opacity: 0;
+}
+
+.scroll-area:hover .el-scrollbar__thumb,
+.scroll-area:active .el-scrollbar__thumb,
+.scroll-area:focus .el-scrollbar__thumb {
+    opacity: 1;
+}
+
+
+.art-row--done {
+    background: var(--el-color-success-light-9);
+    border-color: var(--el-color-success-light-5);
+}
+
+.art-row--finished {
+    border-color: var(--el-color-success);
+    box-shadow: 0 0 0 1px var(--el-color-success-light-5);
+}
+
+.art-row--completed {
+    border-color: var(--el-color-success);
+    box-shadow:
+            0 0 0 1px var(--el-color-success-light-5),
+            0 0 10px rgba(103, 194, 58, 0.35); /* мягкое свечение */
+}
+
+.art-row--all-closed {
+
+    box-shadow:
+            0 0 0 0px rgba(0, 0, 0, 0.08),
+            0 0 2px var(--el-color-success);
+}
+
+.art-row--all-closed:hover {
+
+    box-shadow:
+            0 0 0 2px rgba(0, 0, 0, 0.08),
+            0 0 3px var(--el-color-success);
+}
+
+
+
+
+/* Колонка статуса и кнопка "on disk" */
+.art-status {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.art-row-header,
+.art-row-body {
+    grid-template-columns:
+        auto          /* название растягивается */
+        7rem          /* статус */
+        6rem          /* human/furry */
+        6rem          /* sfw/nsfw/crop */
+        6rem          /* twi16/twi18/bsky */
+        4.5rem;       /* posted */
+}
+
+
+/* Кнопка "on disk" под статусом */
+.on-disk-button {
+    position: absolute;
+    bottom: -0.35rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    border: 1px dashed var(--el-border-color);
+    background: var(--el-fill-color);
+    font-size: var(--font-size-xs);
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease;
+}
+
+.on-disk-button.active {
+    background: var(--el-color-primary-light-9);
+    border-color: var(--el-color-primary-light-5);
+    color: var(--el-color-primary);
+
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
+    border-color: var(--el-color-success-light-5);
+}
+
+/* Скрытые (но занимающие место) чекбоксы "выложено" */
+.art-posted .posted-checkbox--hidden {
+    visibility: hidden;
+}
+
+.status-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+/* Колонка статуса и кнопка "on disk" */
+.art-status {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Кнопка "on disk" под статусом */
+.on-disk-button {
+    position: absolute;
+    bottom: -2.2rem;
+    left: 50%;
+    transform: translateX(-50%) scale(110%);
+    margin-left: 0px;
+
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+
+    border: 1px solid var(--el-border-color);
+    background: var(--el-fill-color);
+
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+
+    cursor: pointer;
+
+    display: flex;                /* выравнивание */
+    align-items: center;          /* по вертикали */
+    justify-content: center;      /* по горизонтали */
+    white-space: nowrap;          /* текст в одну строку */
+
+    font-size: var(--font-size-s);      /* размер текста */
+    font-weight: 500;                   /* жирность */
+    text-transform: lowercase;          /* всё строчными */
+    letter-spacing: 0.2px;              /* межбуквенное */
+
+    /* плюс цвет: */
+    color: var(--el-text-color-regular);
+
+    opacity: 0.55;
+    border: 1px solid transparent;
+
+    transition:
+            background 0.18s ease,
+            color 0.18s ease,
+            border-color 0.18s ease;
+}
+
+
+.on-disk-button.active {
+    background: var(--el-color-primary-light-9);
+    border-color: var(--el-color-primary-light-5);
+    color: var(--el-color-primary);
+
+    background: var(--el-color-success-light-9);
+    color: var(--el-color-success);
+    border-color: var(--el-color-success-light-5);
+}
+
+.art-posted-placeholder {
+    font-size: var(--font-size-xs);
+    color: var(--el-text-color-secondary);
+    opacity: 0.8;
+    text-align: center;
+    padding: 0.25rem 0.5rem;
+}
+
+.art-row-header {
+    display: grid;
+    grid-template-columns: 1fr 4rem; /* широкая зона + узкая "posted" */
+    align-items: center;
+    column-gap: 0.625rem;
+}
+
+.header-archive {
+    position: relative;
+    height: 0.9rem; /* аккуратная полоска сверху карточки */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(var(--el-color-success));
+}
+
+.header-archive--empty {
+    cursor: default;
+}
+
+
+.header-archive-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 0.9rem; /* если там el-icon — это его размер */
+    color: var(--el-text-color-secondary);
+
+    opacity: 0.6;
+    transform: translateY(0);
+
+    transition:
+            transform 0.16s ease,
+            color 0.16s ease,
+            opacity 0.16s ease;
+}
+
+/* Кнопка активна (есть смысл кликать) */
+.header-archive {
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(var(--el-color-success));
+}
+
+/* HOVER: иконка чуть всплывает и ярче, тень проявляется */
+.header-archive:hover .header-archive-arrow {
+    opacity: 1;
+    color: var(--el-color-primary);
+    transform: translateY(-1px);
+}
+
+.header-archive:hover {
+    opacity: 1;
+}
+
+/* ACTIVE: ощущение лёгкого нажатия */
+.header-archive:active .header-archive-arrow {
+    transform: translateY(0); /* вернулась чуть вниз */
+    opacity: 0.85;
+}
+
+.header-archive:active {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.14);
+}
+
+.finish-icon {
+    position: absolute ;
+    top: -1.4rem;      /* чуть выше статус-кнопки */
+    right: 0;           /* или left: 0 — куда тебе больше нравится */
+    width: 1rem;        /* 16px */
+    height: 1rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--el-color-success);
+    opacity: 1;      /* мягкий, не кричащий */
+    font-size: 1.4rem;
+
+    pointer-events: none; /* НЕ влияет на клики */
+    left: 50%;
+    transform: translateX(-50%);
+
+    transition:
+            opacity 0.05s ease,
+            transform 0.05s ease;
+}
+
+.panel-month-picker {
+    width: 10.5rem;
+}
+
+/*!* Адаптив *!
+@media (max-width: 1200px) {
+    .art-row-header,
+    .art-row-body {
+        grid-template-columns: 2.6fr 0.9fr 1.05fr 1.05fr 1.05fr 0.9fr;
+    }
+}
+
+@media (max-width: 960px) {
+    .right-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--el-border-color);
+        padding: 1.25rem 1rem; !* 20px 16px *!
+    }
+}*/
+
+/* VISUAL LATER:
+                    когда замочек закрыт, кнопки удаления и редактирования не появляются
+                    убрать синие рамки от наведения и\или кликов
+                    убрать возможность появления курсора на названии когда нет режима редактирования
+                    добавить функционал удаления
+                    убрать чекбоксы напротив тех соцсетей которые не выбраны
+*/

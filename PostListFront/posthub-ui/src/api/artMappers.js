@@ -40,7 +40,7 @@ export function normalizeStatusToApi(uiStatus) {
     }
 }
 
-// Из API → во внутренний формат, с которым работает RightPanel
+// Из API → во внутренний формат, с которым работает LeftPanel
 export function mapArtFromApi(row) {
     const art = {}
 
@@ -134,4 +134,3 @@ export function mapArtToApi(art) {
 
     return payload
 }
-

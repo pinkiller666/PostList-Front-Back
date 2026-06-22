@@ -3,8 +3,9 @@ import { ref } from 'vue'
 import http from './api/http'
 import { ElMessage } from 'element-plus'
 import ArtsTable from './components/ArtsTable.vue'
-import OrdersTable from './components/OrdersTable.vue'
-import RightPanel from './components/RightPanel.vue'
+import LeftPanel from './components/LeftPanel.vue'
+import AccountingOrderCard from './components/AccountingOrderCard.vue'
+import AccountingPage from './components/AccountingPage.vue'
 
 const loading = ref(false)
 const items = ref([])
@@ -32,57 +33,12 @@ const toggleContent = () => {
 
 <template>
   <div class="app-layout">
-    <RightPanel />
+    <LeftPanel />
 
     <div class="content-shell">
       <div class="content-transition-wrapper" :id="contentPanelId">
         <transition name="content-fade" mode="out-in">
-          <div v-if="showContent" key="content" class="app-content">
-            <div class="content-controls">
-              <el-button
-                  class="toggle-button"
-                  type="primary"
-                  plain
-                  size="small"
-                  :aria-expanded="showContent"
-                  :aria-controls="contentPanelId"
-                  @click="toggleContent"
-              >
-                Скрыть центральную панель
-              </el-button>
-            </div>
-
-            <h1 class="app-title">posthub ui</h1>
-
-            <el-button class="load-button" type="primary" :loading="loading" @click="loadData">
-              Загрузить данные с Django
-            </el-button>
-
-            <div class="table-wrapper">
-              <el-tabs class="data-tabs" type="border-card">
-                <el-tab-pane label="Арты">
-                  <ArtsTable :items="items" />
-                </el-tab-pane>
-                <el-tab-pane label="Заказы / деньги">
-                  <OrdersTable :items="items" />
-                </el-tab-pane>
-              </el-tabs>
-            </div>
-          </div>
-
-          <div v-else key="placeholder" class="content-placeholder">
-            <el-button
-                class="toggle-button"
-                type="primary"
-                plain
-                size="small"
-                :aria-expanded="showContent"
-                :aria-controls="contentPanelId"
-                @click="toggleContent"
-            >
-              Открыть центральную панель
-            </el-button>
-          </div>
+            <AccountingPage />
         </transition>
       </div>
     </div>
@@ -155,16 +111,12 @@ const toggleContent = () => {
 }
 
 .table-wrapper {
-  width: min(1120px, 100%);
+  width: min(840px, 100%);
   align-self: stretch;
 }
 
 .toggle-button {
   letter-spacing: 0.3px;
-}
-
-.data-tabs {
-  width: 100%;
 }
 
 .content-fade-enter-active,
